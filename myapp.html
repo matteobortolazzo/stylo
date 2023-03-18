@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Stylo App</title>
+  <style>
+    :root {
+      --backgroundColor: #F5F5F5;
+      --foregroundColor: #333333;
+      --primaryColor: #FFC0CB;
+    }
+    .bg-primary {
+      border-color: var(--primaryColor);
+    }
+  </style>
+</head>
+<body>
+  <div data-comp="MyApp">
+    <div class="p-4 flex justify-between border-b-2 border-primary p-4 flex justify-between border-b-2 border-primary">
+      
+      <h1>My app</h1>
+      <a>Sign up</a>
+      <a>My Logout</a>
+    </div>
+    <div class="bg-primary border-2 rounded" style="padding: 20px">Lorem ipsum dolor sit amet, consectetur adipiscing elit</div>
+    <div class="p4 flex justify-end border-b-2 border-primary p4 flex justify-end border-b-2 border-primary">
+      
+      <button class="border-2 rounded p-2 border-primary border-2 rounded p-2 border-primary">Cancel</button>
+      <button class="border-2 rounded p-2 border-transparent bg-primary border-2 rounded p-2 border-transparent border-2 rounded">Continue</button>
+    </div>
+  </div>
+</body>
+</html>
