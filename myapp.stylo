@@ -1,8 +1,10 @@
 component Header(text) {
-  a { "Sign up" }
-  Slot
-  Slot(right)
-  Slot(left)
+  div {
+    a { "Sign up" }
+    Slot
+    Slot(right)
+    Slot(left)
+  }
 }
 
 display component MyApp {

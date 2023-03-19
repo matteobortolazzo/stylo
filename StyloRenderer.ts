@@ -82,7 +82,10 @@ export default class StyloRenderer {
     return `<div data-comp="${component.name}">${content}\n${TAB}</div>`;
   }
 
-  private renderComponentChildren(children: ComponentChildNode[], indent: string, parentArgs?: ComponentArgument[]): string {
+  private renderComponentChildren(
+    children: ComponentChildNode[],
+    indent: string,
+    parentArgs?: ComponentArgument[]): string {
     return children
       .map((child) => {
         switch (child.type) {
@@ -99,7 +102,10 @@ export default class StyloRenderer {
       .join("");
   }
 
-  private renderHtmlElement(htmlElement: HTMLElementNode, indent: string, parentArgs?: ComponentArgument[]): string {
+  private renderHtmlElement(
+    htmlElement: HTMLElementNode,
+    indent: string,
+    parentArgs?: ComponentArgument[]): string {
     const tag = htmlElement.name;
     const styleAttr = htmlElement.style ? ` style="${htmlElement.style}"` : "";
 
@@ -124,7 +130,10 @@ export default class StyloRenderer {
     return `\n${TAB}${indent}<${tag}${classAttr}${styleAttr}>${content}</${tag}>`;
   }
 
-  private renderComponentRef(componentReference: ComponentRefNode, indent: string, parentArgs?: ComponentArgument[]): string {
+  private renderComponentRef(
+    componentReference: ComponentRefNode,
+    indent: string,
+    parentArgs?: ComponentArgument[]): string {
     const componentDefinition = this.components.get(componentReference.name)
     if (!componentDefinition) {
       throw new Error(`Component ${componentReference.name} is not defined`)
