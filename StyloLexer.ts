@@ -4,6 +4,7 @@ export enum TokenType {
   Identifier = 'Identifier',
   Keyword = 'Keyword',
   String = 'String',
+  CssValue = 'CssValue',
   CssVariable = 'CssVariable',
   Lparen = 'Lparen',
   Rparen = 'Rparen',
@@ -37,7 +38,8 @@ export default class StyloLexer {
 
   private static readonly WHITESPACE = /\s/;
   private static readonly NEWLINE = /\r?\n/;
-  private static readonly WORD_START = /[@a-zA-Z_]/;
+  private static readonly WORD_START = /[@a-zA-Z]/;
+  private static readonly NUMBER_START = /[0-9]/;
   private static readonly WORD = /[-a-zA-Z0-9@_]/;
 
   tokenize(): Token[] {
@@ -58,7 +60,12 @@ export default class StyloLexer {
       }
   
       if (StyloLexer.WORD_START.test(currentChar)) {
-        this.tokenizeWord();
+        this.tokenizeWord(TokenType.Identifier, true);
+        continue;
+      }
+
+      if (StyloLexer.NUMBER_START.test(currentChar)) {
+        this.tokenizeWord(TokenType.CssValue, false);
         continue;
       }
 
@@ -84,8 +91,9 @@ export default class StyloLexer {
         case ',':
           this.addToken(TokenType.Comma);
           break;
-        case '$':
-          this.tokenizeCssVariable();
+        case '$':          
+          this.pos++;
+          this.tokenizeWord(TokenType.CssVariable, false);
           break;
         case '=':
           this.addToken(TokenType.Equal);
@@ -104,7 +112,7 @@ export default class StyloLexer {
     return this.tokens;
   }
 
-  private tokenizeWord(): void {
+  private tokenizeWord(type: TokenType, possibleKeyword: boolean): void {
     let word = '';
     while (
       this.pos < this.input.length &&
@@ -113,25 +121,11 @@ export default class StyloLexer {
       word += this.input[this.pos++];
     }    
 
-    if (StyloLexer.KEYWORDS.includes(word)) {
+    if (possibleKeyword && StyloLexer.KEYWORDS.includes(word)) {
       this.tokens.push(new Token(TokenType.Keyword, word));
     } else {
-      this.tokens.push(new Token(TokenType.Identifier, word));
+      this.tokens.push(new Token(type, word));
     }
-  }
-
-  private tokenizeCssVariable(): void {
-    let word = '';
-    this.pos++;
-    while (
-      this.pos < this.input.length &&
-      StyloLexer.WORD.test(this.input[this.pos])
-    ) {
-      word += this.input[this.pos++];
-    }    
-
-    this.tokens.push(new Token(TokenType.CssVariable, word));
-    this.pos++;
   }
 
   private tokenizeString(quote: string): void {

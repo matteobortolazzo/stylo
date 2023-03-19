@@ -155,7 +155,7 @@ export class StyloParser {
     if (this.peekHasType(TokenType.CssVariable)) {
       return this.parseCssVariable(name)
     }
-    return this.parseCssVariableValue(name);    
+    return this.parseCssPropertyValue(name);    
   }
 
   private parseCssVariable(name: string): CssVariableNode {
@@ -167,10 +167,13 @@ export class StyloParser {
     };
   }
 
-  private parseCssVariableValue(name: string): CssPropertyNode {
+  private parseCssPropertyValue(name: string): CssPropertyNode {
     const value: string[] = [];
     while (!this.peekHasType(TokenType.Semicolon)) {
-      value.push(this.parseTokenValue(TokenType.Identifier));
+      const nextTokenType = this.peekHasType(TokenType.CssValue) 
+        ? TokenType.CssValue
+        : TokenType.Identifier;
+      value.push(this.parseTokenValue(nextTokenType));
     }
     this.expect(TokenType.Semicolon);
 

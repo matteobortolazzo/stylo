@@ -73,7 +73,7 @@ export default class StyloRenderer {
     }
 
     return `  .${node.name} {
-      ${cssProperties.join("\n")}
+      ${cssProperties.join("\n      ")}
     }`;
   }
 

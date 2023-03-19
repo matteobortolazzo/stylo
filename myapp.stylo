@@ -5,6 +5,8 @@ param primaryColor = '#FFC0CB'
 class bg-primary {
   @apply border-2 rounded;
   border-color: $primaryColor;
+  grid-template-columns: 1fr 1fr;
+  border: 30px;
 }
 
 component PrimaryButton(text) {
