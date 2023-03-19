@@ -107,10 +107,12 @@ export default class StyloRenderer {
     const classAttr = htmlElement.class ? ` class="${htmlElement.class} ${appliedClasses}"` : "";
 
     let content = '';
+    // Render child nodes
     if (Array.isArray(htmlElement.children)) {
       const childrenContent = this.renderComponentChildren(htmlElement.children, indent + TAB, parentArgs);
       content = `\n${indent}${TAB}${TAB}${childrenContent}\n${indent}${TAB}`;
     }
+    // Replace string templates
     else {
       content = htmlElement.children as string;
       if (parentArgs) {
@@ -138,24 +140,33 @@ export default class StyloRenderer {
     componentDef: ComponentDefinitionNode,
     parentArgs?: ComponentArgument[]): ComponentArgument[] {
     const currentNodeArgs: ComponentArgument[] = [];
-    if (componentDef.args && componentDef.args.length) {
-      if (!componentRef.args || !componentRef.args.length || componentDef.args.length !== componentRef.args.length) {
-        throw new Error(`Component ${componentRef.name} requires ${componentDef.args?.length} arguments, but ${componentRef.args?.length ?? 0} were provided`)
+
+    // Not args
+    if (!componentDef.args || !componentDef.args.length) {
+      return currentNodeArgs;
+    }
+    // Wrong args
+    if (!componentRef.args || !componentRef.args.length || componentDef.args.length !== componentRef.args.length) {
+      throw new Error(`Component ${componentRef.name} requires ${componentDef.args?.length} arguments, but ${componentRef.args?.length ?? 0} were provided`)
+    }
+
+    for (let i = 0; i < componentDef.args.length; i++) {
+      const name = componentDef.args[i];
+      const argNode = componentRef.args[i];
+
+      // Direct value
+      if (argNode.valueType === 'string') {
+        currentNodeArgs.push({ name, value: argNode.value })
+        continue;
       }
 
-      for (let i = 0; i < componentDef.args.length; i++) {
-        const name = componentDef.args[i];
-        const argNode = componentRef.args[i];
-        if (argNode.valueType === 'string') {
-          currentNodeArgs.push({ name, value: argNode.value })
-        } else {
-          const parantArg = parentArgs?.find((a) => a.name === argNode.value);
-          if (!parantArg) {
-            throw new Error(`Argument ${argNode.value} is not defined`)
-          }
-          currentNodeArgs.push({ name, value: parantArg.value })
-        }
+      // Value from parent
+      const parantArg = parentArgs?.find((a) => a.name === argNode.value);
+      if (!parantArg) {
+        throw new Error(`Argument ${argNode.value} is not defined`)
       }
+      currentNodeArgs.push({ name, value: parantArg.value })
+
     }
     return currentNodeArgs;
   }
@@ -187,11 +198,11 @@ export default class StyloRenderer {
       const slotNode = componentRefChildren
         .find(node => {
           // Slot ref not supported
-          if (node.type === 'slotRef' ) {
+          if (node.type === 'slotRef') {
             return false;
           }
           // Search by name
-          if (child.name){
+          if (child.name) {
             return node.slot === child.name;
           }
           // Get the first with no name
