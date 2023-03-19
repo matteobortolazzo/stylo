@@ -1,12 +1,14 @@
 component Header(text) {
   a { "Sign up" }
   Slot
-  Slot
+  Slot(right)
+  Slot(left)
 }
 
 display component MyApp {
   Header("My app") {
-    a { "Hello" }
-    a { "Hello2" }
+    a(slot="left") { "Left" }
+    a(slot="right") { "Right" }
+    a { "Bottom" }
   }
 }

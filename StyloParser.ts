@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_DISPLAY, KW_PARAM, KW_SLOT, KW_STYLE } from "./Constants.ts";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_DISPLAY, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants.ts";
 import { Token, TokenType } from './StyloLexer.ts';
 
 // Param
@@ -51,14 +51,16 @@ export type HTMLElementNode = {
   name: string;
   class?: string;
   style?: string;
+  slot?: string;
   children?: ComponentChildNode[] | string;
 }
 
 export type ComponentRefNode = {
   type: 'componentRef';
   name: string;
+  slot?: string;
   args?: ComponentRefArgNode[],
-  slotChildren?: ComponentChildNode[] | string;
+  slotChildren?: ComponentChildNode[];
 }
 
 export type ComponentRefArgNode = {
@@ -269,9 +271,18 @@ export class StyloParser {
   }
 
   private parseSlotReferenceNode(): SlotRefNode {
-    this.expect(TokenType.Keyword, KW_SLOT);
+    this.expect(TokenType.Keyword, KW_SLOT_UPP);
+
+    let name: string | undefined;
+    if (this.peekHasType(TokenType.Lparen)) {
+      this.expect(TokenType.Lparen);
+      name = this.parseTokenValue(TokenType.Identifier);
+      this.expect(TokenType.Rparen);
+    }
+
     return {
-      type: 'slotRef'
+      type: 'slotRef',
+      name
     };
   }
 
@@ -287,6 +298,7 @@ export class StyloParser {
         type: 'htmlElement',
         name: name,
         children: content,
+        slot: keyValuePairs[KW_SLOT_LOW],
         class: keyValuePairs[KW_CLASS],
         style: keyValuePairs[KW_STYLE],
       }
@@ -323,19 +335,14 @@ export class StyloParser {
     }
 
     // Define Slot
-    let slotChildren: ComponentChildNode[] | string = [];
+    const slotChildren: ComponentChildNode[] = [];
     if (this.peekHasType(TokenType.Lbrace)) {
       this.expect(TokenType.Lbrace);
 
-      if (this.peekHasType(TokenType.String)) {
-        slotChildren = this.parseTokenValue(TokenType.String);
-        this.expect(TokenType.Rbrace);
-      } else {
-        while (!this.peekHasType(TokenType.Rbrace)) {
-          slotChildren.push(this.parseComponentChild());
-        }
-        this.expect(TokenType.Rbrace);
+      while (!this.peekHasType(TokenType.Rbrace)) {
+        slotChildren.push(this.parseComponentChild());
       }
+      this.expect(TokenType.Rbrace);
     }
 
     return {
