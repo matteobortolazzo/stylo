@@ -26,11 +26,14 @@ component Header(text, logout) {
     h1 { "{text}" }
     a { "Sign up" }
     Logout(logout)
+    Slot
   }
 }
 
 display component MyApp {
-  Header("My app", "My Logout")
+  Header("My app", "My Logout") {
+    a { "Hello" } 
+  }
   
   div(class='bg-primary', style='padding: 20px') {
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit'

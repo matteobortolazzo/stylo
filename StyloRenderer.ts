@@ -1,8 +1,8 @@
+import { TAB } from "./Constants.ts";
 import { ParamNode, ComponentDefinitionNode, ComponentRefNode, HTMLElementNode } from "./StyloParser.ts";
 import { ClassNode } from "./StyloParser.ts";
 import { Node } from "./StyloParser.ts";
 import { ComponentChildNode } from "./StyloParser.ts";
-import * as KW from "./Constants.ts";
 
 type ComponentArgument = {
   name: string;
@@ -27,8 +27,8 @@ export default class StyloRenderer {
       .map((classNode) => this.renderCustomClass(classNode))
       .join("\n");
 
-    const styleContent = cssVariables ? `:root {\n${cssVariables}\n${KW.TAB}${KW.TAB}}` : "";
-    const styleBlock = `<style>\n${KW.TAB}${KW.TAB}${styleContent}\n${KW.TAB}${customClasses}\n${KW.TAB}</style>`;
+    const styleContent = cssVariables ? `:root {\n${cssVariables}\n${TAB}${TAB}}` : "";
+    const styleBlock = `<style>\n${TAB}${TAB}${styleContent}\n${TAB}${customClasses}\n${TAB}</style>`;
 
     const componentDefinitionNodes = this.ast
       .filter((n) => n.type === "componentDef")
@@ -78,8 +78,8 @@ export default class StyloRenderer {
   }
 
   private renderComponent(component: ComponentDefinitionNode): string {
-    const content = this.renderComponentChildren(component.children, KW.TAB)
-    return `<div data-comp="${component.name}">${content}\n${KW.TAB}</div>`;
+    const content = this.renderComponentChildren(component.children, TAB)
+    return `<div data-comp="${component.name}">${content}\n${TAB}</div>`;
   }
 
   private renderComponentChildren(children: ComponentChildNode[], indent: string, parentArgs?: ComponentArgument[]): string {
@@ -108,8 +108,8 @@ export default class StyloRenderer {
 
     let content = '';
     if (Array.isArray(htmlNode.children)) {
-      const childrenContent = this.renderComponentChildren(htmlNode.children, indent + KW.TAB, parentArgs);
-      content = `\n${indent}${KW.TAB}${KW.TAB}${childrenContent}\n${indent}${KW.TAB}`;
+      const childrenContent = this.renderComponentChildren(htmlNode.children, indent + TAB, parentArgs);
+      content = `\n${indent}${TAB}${TAB}${childrenContent}\n${indent}${TAB}`;
     }
     else {
       content = htmlNode.children as string;
@@ -119,7 +119,7 @@ export default class StyloRenderer {
         }
       }
     }
-    return `\n${KW.TAB}${indent}<${tag}${classAttr}${styleAttr}>${content}</${tag}>`;
+    return `\n${TAB}${indent}<${tag}${classAttr}${styleAttr}>${content}</${tag}>`;
   }
 
   private renderComponentRef(refNode: ComponentRefNode, indent: string, parentArgs?: ComponentArgument[]): string {

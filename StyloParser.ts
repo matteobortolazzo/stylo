@@ -1,4 +1,4 @@
-import * as KW from "./Constants.ts";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_DISPLAY, KW_PARAM, KW_SLOT, KW_STYLE } from "./Constants.ts";
 import { Token, TokenType } from './StyloLexer.ts';
 
 // Param
@@ -44,7 +44,7 @@ export type ComponentDefinitionNode = {
   children: ComponentChildNode[];
 };
 
-export type ComponentChildNode = HTMLElementNode | ComponentRefNode;
+export type ComponentChildNode = HTMLElementNode | ComponentRefNode | SlotRefNode;
 
 export type HTMLElementNode = {
   type: 'htmlElement';
@@ -57,13 +57,19 @@ export type HTMLElementNode = {
 export type ComponentRefNode = {
   type: 'componentRef';
   name: string;
-  args?: ComponentRefArgNode[]
+  args?: ComponentRefArgNode[],
+  slotChildren?: ComponentChildNode[] | string;
 }
 
 export type ComponentRefArgNode = {
   type: 'componentRefArg';
   value: string;
   valueType: 'string' | 'parameter'
+}
+
+export type SlotRefNode = {
+  type: 'slotRef';
+  name?: string;
 }
 
 // Root
@@ -80,21 +86,21 @@ export class StyloParser {
     const nodes: Node[] = [];
 
     while (this.pos < this.tokens.length) {
-      const token = this.tokens[this.pos];
+      const token = this.peek();
 
       if (token.type !== TokenType.Keyword) {
         throw new Error(`Unexpected token: ${token.type}`);
       }
 
-      if (token.value === KW.PARAM) {
-        nodes.push(this.parseParam());
-      } else if (token.value === KW.CLASS) {
-        nodes.push(this.parseClass());
-      } else if (token.value === KW.DISPLAY) {
-        this.expect(TokenType.Keyword, KW.DISPLAY);
-        nodes.push(this.parseComponent(true));
-      } else if (token.value === KW.COMPONENT) {
-        nodes.push(this.parseComponent(false));
+      if (token.value === KW_PARAM) {
+        nodes.push(this.parseParamDefinition());
+      } else if (token.value === KW_CLASS) {
+        nodes.push(this.parseClassDefinition());
+      } else if (token.value === KW_DISPLAY) {
+        this.expect(TokenType.Keyword, KW_DISPLAY);
+        nodes.push(this.parseComponentDefinition(true));
+      } else if (token.value === KW_COMPONENT) {
+        nodes.push(this.parseComponentDefinition(false));
       } else {
         throw new Error(`Unexpected token: ${token.type}`);
       }
@@ -105,7 +111,7 @@ export class StyloParser {
 
   //#region Param
 
-  private parseParam(): ParamNode {
+  private parseParamDefinition(): ParamNode {
     this.expect(TokenType.Keyword, 'param');
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Equal);
@@ -122,7 +128,7 @@ export class StyloParser {
 
   //#region Class
 
-  private parseClass(): ClassNode {
+  private parseClassDefinition(): ClassNode {
     this.expect(TokenType.Keyword, 'class');
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Lbrace);
@@ -185,7 +191,7 @@ export class StyloParser {
   }
 
   private parseApply(): ApplyNode {
-    this.expect(TokenType.Keyword, KW.APPLY);
+    this.expect(TokenType.Keyword, KW_APPLY);
 
     const value: string[] = [];
     while (!this.peekHasType(TokenType.Semicolon)) {
@@ -195,7 +201,7 @@ export class StyloParser {
 
     return {
       type: 'apply',
-      name: KW.APPLY,
+      name: KW_APPLY,
       value,
     };
   }
@@ -204,7 +210,7 @@ export class StyloParser {
 
   //#region Component
 
-  private parseComponent(display: boolean): ComponentDefinitionNode {
+  private parseComponentDefinition(display: boolean): ComponentDefinitionNode {
     this.expect(TokenType.Keyword, 'component');
     const name = this.parseTokenValue(TokenType.Identifier);
 
@@ -251,11 +257,22 @@ export class StyloParser {
   }
 
   private parseComponentChild(): ComponentChildNode {
+    if (this.peekHasType(TokenType.Keyword)) {
+      return this.parseSlotReferenceNode();
+    }
+      
     const name = this.parseTokenValue(TokenType.Identifier);
     if (StyloParser.HTML_ELEMENT_START.test((name)[0])) {
       return this.parseHtmlElement(name);
     }
     return this.parseComponentReferenceNode(name);
+  }
+
+  private parseSlotReferenceNode(): SlotRefNode {
+    this.expect(TokenType.Keyword, KW_SLOT);
+    return {
+      type: 'slotRef'
+    };
   }
 
   private parseHtmlElement(name: string): HTMLElementNode {
@@ -270,8 +287,8 @@ export class StyloParser {
         type: 'htmlElement',
         name: name,
         children: content,
-        class: keyValuePairs[KW.CLASS],
-        style: keyValuePairs[KW.STYLE],
+        class: keyValuePairs[KW_CLASS],
+        style: keyValuePairs[KW_STYLE],
       }
     }
 
@@ -285,24 +302,9 @@ export class StyloParser {
       type: 'htmlElement',
       name: name,
       children,
-      class: keyValuePairs[KW.CLASS],
-      style: keyValuePairs[KW.STYLE],
+      class: keyValuePairs[KW_CLASS],
+      style: keyValuePairs[KW_STYLE],
     }
-  }
-
-  //#endregion
-
-  //#region Utils
-
-  private expect(type: TokenType, value?: string): Token {
-    const token = this.tokens[this.pos];
-    if (token.type !== type || (value !== undefined && token.value !== value)) {
-      throw new Error(
-        `Expected token of type ${type} and value ${value}, but got token of type ${token.type} and value ${token.value}`
-      );
-    }
-    this.pos++;
-    return token;
   }
 
   private parseComponentReferenceNode(name: string): ComponentRefNode {
@@ -320,10 +322,27 @@ export class StyloParser {
       this.expect(TokenType.Rparen);
     }
 
+    // Define Slot
+    let slotChildren: ComponentChildNode[] | string = [];
+    if (this.peekHasType(TokenType.Lbrace)) {
+      this.expect(TokenType.Lbrace);
+
+      if (this.peekHasType(TokenType.String)) {
+        slotChildren = this.parseTokenValue(TokenType.String);
+        this.expect(TokenType.Rbrace);
+      } else {
+        while (!this.peekHasType(TokenType.Rbrace)) {
+          slotChildren.push(this.parseComponentChild());
+        }
+        this.expect(TokenType.Rbrace);
+      }
+    }
+
     return {
       type: 'componentRef',
       name,
-      args
+      args,
+      slotChildren
     }
   }
 
@@ -346,10 +365,9 @@ export class StyloParser {
     throw new Error('Expected identifier or string');
   }
 
-  private parseTokenValue(tokenType: TokenType): string {
-    const token = this.expect(tokenType);
-    return token.value as string;
-  }
+  //#endregion
+
+  //#region Utils
 
   private parseKeywordValuePairs(): { [key: string]: string } {
     const pairs: { [key: string]: string } = {};
@@ -371,8 +389,28 @@ export class StyloParser {
     return pairs;
   }
 
+  private expect(type: TokenType, value?: string): Token {
+    const token = this.peek();
+    if (token.type !== type || (value !== undefined && token.value !== value)) {
+      throw new Error(
+        `Expected token of type ${type} and value ${value}, but got token of type ${token.type} and value ${token.value}`
+      );
+    }
+    this.pos++;
+    return token;
+  }
+
+  private parseTokenValue(tokenType: TokenType): string {
+    const token = this.expect(tokenType);
+    return token.value as string;
+  }
+
   private peekHasType(type: TokenType): boolean {
-    return this.tokens[this.pos].type === type;
+    return this.peek().type === type;
+  }
+
+  private peek(): Token {
+    return this.tokens[this.pos];
   }
 
   //#endregion
