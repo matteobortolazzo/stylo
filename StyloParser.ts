@@ -80,7 +80,7 @@ export class StyloParser {
     const nodes: Node[] = [];
 
     while (this.pos < this.tokens.length) {
-      const token = this.peek();
+      const token = this.tokens[this.pos];
 
       if (token.type !== TokenType.Keyword) {
         throw new Error(`Unexpected token: ${token.type}`);
@@ -128,7 +128,7 @@ export class StyloParser {
     this.expect(TokenType.Lbrace);
 
     const properties: ClassChildNode[] = [];
-    while (this.peek().type !== TokenType.Rbrace) {
+    while (!this.peekHasType(TokenType.Rbrace)) {
       properties.push(this.parseClassChild());
     }
 
@@ -142,7 +142,7 @@ export class StyloParser {
   }
 
   private parseClassChild(): ClassChildNode {
-    if (this.peek().type === TokenType.Keyword) {
+    if (this.peekHasType(TokenType.Keyword)) {
       return this.parseApply();
     }
     return this.parseCssProperty();
@@ -152,7 +152,7 @@ export class StyloParser {
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Colon);
 
-    if (this.peek().type === TokenType.CssVariable) {
+    if (this.peekHasType(TokenType.CssVariable)) {
       return this.parseCssVariable(name)
     }
     return this.parseCssVariableValue(name);    
@@ -169,7 +169,7 @@ export class StyloParser {
 
   private parseCssVariableValue(name: string): CssPropertyNode {
     const value: string[] = [];
-    while (this.peek().type !== TokenType.Semicolon) {
+    while (!this.peekHasType(TokenType.Semicolon)) {
       value.push(this.parseTokenValue(TokenType.Identifier));
     }
     this.expect(TokenType.Semicolon);
@@ -185,7 +185,7 @@ export class StyloParser {
     this.expect(TokenType.Keyword, KW.APPLY);
 
     const value: string[] = [];
-    while (this.peek().type !== TokenType.Semicolon) {
+    while (!this.peekHasType(TokenType.Semicolon)) {
       value.push(this.parseTokenValue(TokenType.Identifier));
     }
     this.expect(TokenType.Semicolon);
@@ -206,7 +206,7 @@ export class StyloParser {
     const name = this.parseTokenValue(TokenType.Identifier);
 
     let args: string[] | undefined;
-    if (this.peek().type == TokenType.Lparen) {
+    if (this.peekHasType(TokenType.Lparen)) {
       args = this.parseComponentArguments();
     }
 
@@ -224,9 +224,9 @@ export class StyloParser {
   private parseComponentArguments(): string[] {
     this.expect(TokenType.Lparen);
     const items: string[] = [];
-    while (this.peek().type !== TokenType.Rparen) {
+    while (!this.peekHasType(TokenType.Rparen)) {
       items.push(this.parseTokenValue(TokenType.Identifier));
-      if (this.peek().type === TokenType.Comma) {
+      if (this.peekHasType(TokenType.Comma)) {
         this.expect(TokenType.Comma);
       }
     }
@@ -239,7 +239,7 @@ export class StyloParser {
     this.expect(TokenType.Lbrace);
 
     const children: ComponentChildNode[] = [];
-    while (this.peek().type !== TokenType.Rbrace) {
+    while (!this.peekHasType(TokenType.Rbrace)) {
       children.push(this.parseComponentChild());
     }
 
@@ -260,7 +260,7 @@ export class StyloParser {
 
     this.expect(TokenType.Lbrace);
 
-    if (this.peek().type === TokenType.String) {
+    if (this.peekHasType(TokenType.String)) {
       const content = this.parseTokenValue(TokenType.String);
       this.expect(TokenType.Rbrace);
       return {
@@ -273,7 +273,7 @@ export class StyloParser {
     }
 
     const children: ComponentChildNode[] = [];
-    while (this.peek().type !== TokenType.Rbrace) {
+    while (!this.peekHasType(TokenType.Rbrace)) {
       children.push(this.parseComponentChild());
     }
     this.expect(TokenType.Rbrace);
@@ -302,19 +302,15 @@ export class StyloParser {
     return token;
   }
 
-  private peek(): Token {
-    return this.tokens[this.pos];
-  }
-
   private parseComponentReferenceNode(name: string): ComponentRefNode {
     const args: ComponentRefArgNode[] = [];
 
-    if (this.peek().type == TokenType.Lparen) {
+    if (this.peekHasType(TokenType.Lparen)) {
       this.expect(TokenType.Lparen);
-      while (this.peek().type !== TokenType.Rparen) {
+      while (!this.peekHasType(TokenType.Rparen)) {
         const arg = this.parseComponentReferenceArgNode();
         args.push(arg);
-        if (this.peek().type == TokenType.Comma) {
+        if (this.peekHasType(TokenType.Comma)) {
           this.expect(TokenType.Comma);
         }
       }
@@ -329,14 +325,14 @@ export class StyloParser {
   }
 
   private parseComponentReferenceArgNode(): ComponentRefArgNode {
-    if (this.peek().type === TokenType.Identifier) {
+    if (this.peekHasType(TokenType.Identifier)) {
       const value = this.parseTokenValue(TokenType.Identifier);
       return {
         type: 'componentRefArg',
         value,
         valueType: 'parameter'
       }
-    } else if (this.peek().type === TokenType.String) {
+    } else if (this.peekHasType(TokenType.String)) {
       const value = this.parseTokenValue(TokenType.String);
       return {
         type: 'componentRefArg',
@@ -354,22 +350,26 @@ export class StyloParser {
 
   private parseKeywordValuePairs(): { [key: string]: string } {
     const pairs: { [key: string]: string } = {};
-    if (this.peek().type === TokenType.Lparen) {
+    if (this.peekHasType(TokenType.Lparen)) {
       this.expect(TokenType.Lparen)
-      while (this.peek().type !== TokenType.Rparen) {
+      while (!this.peekHasType(TokenType.Rparen)) {
         const keyword = this.parseTokenValue(TokenType.Keyword)
         this.expect(TokenType.Equal);
         const value = this.parseTokenValue(TokenType.String)
 
         pairs[keyword] = value;
 
-        if (this.peek().type === TokenType.Comma) {
+        if (this.peekHasType(TokenType.Comma)) {
           this.expect(TokenType.Comma);
         }
       }
       this.expect(TokenType.Rparen);
     }
     return pairs;
+  }
+
+  private peekHasType(type: TokenType): boolean {
+    return this.tokens[this.pos].type === type;
   }
 
   //#endregion
