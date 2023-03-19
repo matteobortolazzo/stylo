@@ -128,6 +128,8 @@ export default class StyloRenderer {
       throw new Error(`Component ${refNode.name} is not defined`)
     }
 
+    const componentChildren = [...component.children];
+
     const currentNodeArgs: ComponentArgument[] = [];
     if (component.args && component.args.length) {
       if (!refNode.args || !refNode.args.length || component.args.length !== refNode.args.length) {
@@ -149,6 +151,24 @@ export default class StyloRenderer {
       }
     }
 
-    return this.renderComponentChildren(component.children, indent, currentNodeArgs);
+    let slotIndex = 0;
+    for(let i = 0; i < componentChildren.length; i++) {
+      const child = componentChildren[i];
+      if (child.type === 'slotRef')
+      { 
+        if(refNode.slotChildren && slotIndex < refNode.slotChildren.length) {
+          const slotNode = refNode.slotChildren[slotIndex];  
+          if (slotNode as ComponentChildNode) {
+            componentChildren[i] = slotNode as ComponentChildNode;
+          }      
+          else {
+            throw new Error(`Slot content can't be a string`)
+          }
+          slotIndex++;
+        }
+      }
+    }
+
+    return this.renderComponentChildren(componentChildren, indent, currentNodeArgs);
   }
 }

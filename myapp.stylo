@@ -1,46 +1,12 @@
-param backgroundColor = '#F5F5F5'
-param foregroundColor = '#333333'
-param primaryColor = '#FFC0CB'
-
-class bg-primary {
-  @apply border-2 rounded;
-  border-color: $primaryColor;
-  grid-template-columns: 1fr 1fr;
-  border: 30px;
-}
-
-component PrimaryButton(text) {
-  button(class='border-2 rounded p-2 border-transparent bg-primary') { "{text}" }
-}
-
-component SecondaryButton(text) {
-  button(class='border-2 rounded p-2 border-primary') { "{text}" }
-}
-
-component Logout(text) {
-  a { "{text}" }
-}
-
-component Header(text, logout) {
-  div(class='p-4 flex justify-between border-b-2 border-primary') {
-    h1 { "{text}" }
-    a { "Sign up" }
-    Logout(logout)
-    Slot
-  }
+component Header(text) {
+  a { "Sign up" }
+  Slot
+  Slot
 }
 
 display component MyApp {
-  Header("My app", "My Logout") {
-    a { "Hello" } 
-  }
-  
-  div(class='bg-primary', style='padding: 20px') {
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit'
-  }
-
-  div(class='p4 flex justify-end border-b-2 border-primary') {
-    SecondaryButton("Cancel")
-    PrimaryButton("Continue")
+  Header("My app") {
+    a { "Hello" }
+    a { "Hello2" }
   }
 }
