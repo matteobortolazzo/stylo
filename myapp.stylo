@@ -4,6 +4,9 @@ component Header(text) {
     Slot
     Slot(right)
     Slot(left)
+    div {
+      Slot
+    }
   }
 }
 
@@ -12,5 +15,6 @@ display component MyApp {
     a(slot="left") { "Left" }
     a(slot="right") { "Right" }
     a { "Bottom" }
+    a { "Top" }
   }
 }
