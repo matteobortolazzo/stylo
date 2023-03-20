@@ -1,4 +1,4 @@
-import { StyloCompiler } from "./StyloCompiler.ts";
+import { StyloCompiler } from "./src/compiler/StyloCompiler.ts";
 
 const PORT = 8080;
 const INPUT_PATH = "./index.stylo";

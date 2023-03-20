@@ -1,0 +1,5 @@
+component StdPage(backgroundColor, foregroundColor) {
+  div(style='background: {backgroundColor}; color: {foregroundColor}') {
+    Slot
+  }
+}
