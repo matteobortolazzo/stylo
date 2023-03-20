@@ -10,6 +10,7 @@ type ComponentArgument = {
 }
 
 export class StyloRenderer {
+  private parameters = new Map<string, string>();
   private applyClasses = new Map<string, string>();
   private components = new Map<string, ComponentDefinitionNode>();
 
@@ -18,13 +19,11 @@ export class StyloRenderer {
   render(): string {
     const cssVariables = this.ast
       .filter((n) => n.type === "param")
-      .map((n) => n as ParamNode)
-      .map((n) => `      --${n.name}: ${n.value};`)
+      .map(n => this.renderParameters(n as ParamNode))
       .join("\n");
     const customClasses = this.ast
       .filter((n) => n.type === "class")
-      .map((n) => n as ClassNode)
-      .map((classNode) => this.renderCustomClass(classNode))
+      .map(n => this.renderCustomClass(n as ClassNode))
       .join("\n");
 
     const styleContent = cssVariables ? `:root {\n${cssVariables}\n${TAB}${TAB}}` : "";
@@ -56,6 +55,11 @@ export class StyloRenderer {
   ${appContent}
 </body>
 </html>`;
+  }
+
+  private renderParameters(node: ParamNode): string {
+    this.parameters.set(node.name, node.value);
+    return `      --${node.name}: ${node.value};`;
   }
 
   private renderCustomClass(node: ClassNode): string {
@@ -199,11 +203,14 @@ export class StyloRenderer {
 
       // Value from parent
       const parantArg = parentArgs?.find((a) => a.name === argNode.value);
-      if (!parantArg) {
+      const globaParam = this.parameters?.get(argNode.value);
+      if (parantArg) {        
+        currentNodeArgs.push({ name, value: parantArg.value })
+      } else if (globaParam) {
+        currentNodeArgs.push({ name, value: globaParam })
+      } else {        
         throw new Error(`Argument ${argNode.value} is not defined`)
       }
-      currentNodeArgs.push({ name, value: parantArg.value })
-
     }
     return currentNodeArgs;
   }

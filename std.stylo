@@ -1,11 +1,5 @@
-class stdPage {
-  height: 100vh;
-  background: $backgroundColor;
-  color: $foregroundColor;
-}
-
 component StdPage(backgroundColor, foregroundColor) {
-  div(class="stdPage") {
+  div(class="stdPage"; style=`background: ${backgroundColor}; color: ${foregroundColor}`) {
     Slot
   }
 }
