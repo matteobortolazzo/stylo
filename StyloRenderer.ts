@@ -138,8 +138,19 @@ export class StyloRenderer {
     indent: string,
     parentArgs?: ComponentArgument[],
     parentSlots?: ComponentChildNode[]): string {
+
+    function replaceWithArgs(input: string): string {
+      if (parentArgs) {
+        for (const argNode of parentArgs) {
+          input = input.replace(`{${argNode.name}}`, argNode.value);
+        }
+      }
+      return input;
+    }
+
     const tag = htmlElement.name;
-    const styleAttr = htmlElement.style ? ` style="${htmlElement.style}"` : "";
+    const finalStyle = replaceWithArgs(htmlElement.style || "");
+    const styleAttr = htmlElement.style ? ` style="${finalStyle}"` : "";
     // Custom classes
     const appliedClasses = htmlElement.class?.split(' ').map((c) => this.applyClasses.get(c) || c).join(' ') || '';
     const classAttr = htmlElement.class ? ` class="${htmlElement.class} ${appliedClasses}"` : "";
@@ -152,12 +163,7 @@ export class StyloRenderer {
     }
     // Replace string templates
     else {
-      content = htmlElement.children as string;
-      if (parentArgs) {
-        for (const argNode of parentArgs) {
-          content = content.replace(`{${argNode.name}}`, argNode.value);
-        }
-      }
+      content = replaceWithArgs(htmlElement.children as string);
     }
     return `\n${TAB}${indent}<${tag}${classAttr}${styleAttr}>${content}</${tag}>`;
   }

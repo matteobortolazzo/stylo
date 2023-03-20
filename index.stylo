@@ -2,7 +2,7 @@ param backgroundColor = '#F5F5F5'
 param foregroundColor = '#333333'
 param primaryColor = '#FFC0CB'
 
-class container {
+class root {
   display: grid;
   height: 100vh;
   grid-template-rows: auto 1fr auto;
@@ -15,7 +15,7 @@ component Header {
 }
 
 component Footer {
-  div(class="flex border-t-2 border-grey") { 
+  div(class="flex justify-between border-t-2 border-grey") { 
     button { "Cancel" }
     button { "Ok" }
   }
@@ -23,7 +23,7 @@ component Footer {
 
 render component MyApp {
   StdPage(backgroundColor, foregroundColor) {
-    div(class="container") {
+    div(class="root") {
       Header
       div {
         "This is the body"
