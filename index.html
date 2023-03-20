@@ -7,32 +7,36 @@
   <title>Stylo App</title>
   <style>
     :root {
-      --backgroundColor: #F5F5F5;
-      --foregroundColor: #333333;
       --primaryColor: #FFC0CB;
     }
-    .root {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
+    .stdPage {
       height: 100vh;
       background: var(--backgroundColor);
       color: var(--foregroundColor);
+    }
+  .container {
+      display: grid;
+      height: 100%;
+      grid-template-rows: auto 1fr auto;
     }
   </style>
 </head>
 <body>
   <div data-comp="MyApp">
-    <div class="root root">
+    <div class="stdPage stdPage">
       
-      <div class="border-b-2 border-grey border-b-2 border-grey">
+      <div class="container container">
         
-        <h1>Hello</h1>
-      </div>
-      <div>This is the body</div>
-      <div class="flex border-t-2 border-grey flex border-t-2 border-grey">
-        
-        <button>Cancel</button>
-        <button>Ok</button>
+        <div class="border-b-2 border-grey border-b-2 border-grey">
+          
+          <h1>Hello</h1>
+        </div>
+        <div>This is the body</div>
+        <div class="flex border-t-2 border-grey flex border-t-2 border-grey">
+          
+          <button>Cancel</button>
+          <button>Ok</button>
+        </div>
       </div>
     </div>
   </div>

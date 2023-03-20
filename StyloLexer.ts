@@ -42,6 +42,7 @@ export class StyloLexer {
   private static readonly WORD_START = /[@a-zA-Z]/;
   private static readonly NUMBER_START = /[0-9]/;
   private static readonly WORD = /[-a-zA-Z0-9@_]/;
+  private static readonly CSS_VALUE = /[-a-zA-Z0-9@_%]/;
 
   tokenize(): Token[] {
     while (this.pos < this.input.length) {
@@ -61,12 +62,12 @@ export class StyloLexer {
       }
   
       if (StyloLexer.WORD_START.test(currentChar)) {
-        this.tokenizeWord(TokenType.Identifier, true);
+        this.tokenizeWord(StyloLexer.WORD, TokenType.Identifier, true);
         continue;
       }
 
       if (StyloLexer.NUMBER_START.test(currentChar)) {
-        this.tokenizeWord(TokenType.CssValue, false);
+        this.tokenizeWord(StyloLexer.CSS_VALUE, TokenType.CssValue, false);
         continue;
       }
 
@@ -94,7 +95,7 @@ export class StyloLexer {
           break;
         case '$':          
           this.pos++;
-          this.tokenizeWord(TokenType.CssVariable, false);
+          this.tokenizeWord(StyloLexer.WORD, TokenType.CssVariable, false);
           break;
         case '=':
           this.addToken(TokenType.Equal);
@@ -113,11 +114,11 @@ export class StyloLexer {
     return this.tokens;
   }
 
-  private tokenizeWord(type: TokenType, possibleKeyword: boolean): void {
+  private tokenizeWord(contentRegex: RegExp, type: TokenType, possibleKeyword: boolean): void {
     let word = '';
     while (
       this.pos < this.input.length &&
-      StyloLexer.WORD.test(this.input[this.pos])
+      contentRegex.test(this.input[this.pos])
     ) {
       word += this.input[this.pos++];
     }    

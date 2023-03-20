@@ -1,13 +1,9 @@
-param backgroundColor = '#F5F5F5'
-param foregroundColor = '#333333'
 param primaryColor = '#FFC0CB'
 
-class root {
+class container {
   display: grid;
+  height: 100%;
   grid-template-rows: auto 1fr auto;
-  height: 100vh;
-  background: $backgroundColor;
-  color: $foregroundColor;
 }
 
 component Header {
@@ -24,11 +20,13 @@ component Footer {
 }
 
 render component MyApp {
-  div(class="root") {
-    Header
-    div {
-      "This is the body"
+  StdPage('#F5F5F5', '#333333') {
+    div(class="container") {
+      Header
+      div {
+        "This is the body"
+      }
+      Footer
     }
-    Footer
   }
 }
