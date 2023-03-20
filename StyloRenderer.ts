@@ -9,7 +9,7 @@ type ComponentArgument = {
   value: string;
 }
 
-export default class StyloRenderer {
+export class StyloRenderer {
   private applyClasses = new Map<string, string>();
   private components = new Map<string, ComponentDefinitionNode>();
 

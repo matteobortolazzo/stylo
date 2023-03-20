@@ -15,7 +15,7 @@
         "run",
         "--inspect-wait",
         "--allow-all",
-        "main.ts"
+        "server.ts"
       ],
       "attachSimplePort": 9229
     }

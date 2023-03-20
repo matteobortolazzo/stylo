@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Stylo App</title>
+  <style>
+    :root {
+      --backgroundColor: #F5F5F5;
+      --foregroundColor: #333333;
+      --primaryColor: #FFC0CB;
+    }
+    .root {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100vh;
+      background: var(--backgroundColor);
+      color: var(--foregroundColor);
+    }
+  </style>
+</head>
+<body>
+  <div data-comp="MyApp">
+    <div class="root root">
+      
+      <div class="border-b-2 border-grey border-b-2 border-grey">
+        
+        <h1>Hello</h1>
+      </div>
+      <div>This is the body</div>
+      <div class="flex border-t-2 border-grey flex border-t-2 border-grey">
+        
+        <button>Cancel</button>
+        <button>Ok</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

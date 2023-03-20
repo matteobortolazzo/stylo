@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_DISPLAY, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants.ts";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants.ts";
 
 export enum TokenType {
   Identifier = 'Identifier',
@@ -20,14 +20,14 @@ export class Token {
   constructor(public type: TokenType, public value: string | null) {}
 }
 
-export default class StyloLexer {
+export class StyloLexer {
   private pos = 0;
   private tokens: Token[] = [];
 
   constructor(private input: string) {}
 
   private static readonly KEYWORDS = [
-    KW_DISPLAY,
+    KW_RENDER,
     KW_PARAM,
     KW_COMPONENT,
     KW_CLASS,

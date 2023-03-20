@@ -1,0 +1,34 @@
+param backgroundColor = '#F5F5F5'
+param foregroundColor = '#333333'
+param primaryColor = '#FFC0CB'
+
+class root {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  background: $backgroundColor;
+  color: $foregroundColor;
+}
+
+component Header {
+  div(class="border-b-2 border-grey") {
+    h1 { "Hello" }
+  }
+}
+
+component Footer {
+  div(class="flex border-t-2 border-grey") { 
+    button { "Cancel" }
+    button { "Ok" }
+  }
+}
+
+render component MyApp {
+  div(class="root") {
+    Header
+    div {
+      "This is the body"
+    }
+    Footer
+  }
+}

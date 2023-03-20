@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_DISPLAY, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants.ts";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants.ts";
 import { Token, TokenType } from './StyloLexer.ts';
 
 // Param
@@ -98,8 +98,8 @@ export class StyloParser {
         nodes.push(this.parseParamDefinition());
       } else if (token.value === KW_CLASS) {
         nodes.push(this.parseClassDefinition());
-      } else if (token.value === KW_DISPLAY) {
-        this.expect(TokenType.Keyword, KW_DISPLAY);
+      } else if (token.value === KW_RENDER) {
+        this.expect(TokenType.Keyword, KW_RENDER);
         nodes.push(this.parseComponentDefinition(true));
       } else if (token.value === KW_COMPONENT) {
         nodes.push(this.parseComponentDefinition(false));
