@@ -49,7 +49,7 @@ export type ComponentChildNode = HTMLElementNode | ComponentRefNode | SlotRefNod
 export type HTMLElementNode = {
   type: 'htmlElement';
   name: string;
-  class?: string;
+  classes?: string[];
   style?: string;
   slot?: string;
   children?: ComponentChildNode[] | string;
@@ -163,7 +163,7 @@ export class StyloParser {
     if (this.peekHasType(TokenType.CssVariable)) {
       return this.parseCssVariable(name)
     }
-    return this.parseCssPropertyValue(name);    
+    return this.parseCssPropertyValue(name);
   }
 
   private parseCssVariable(name: string): CssVariableNode {
@@ -178,7 +178,7 @@ export class StyloParser {
   private parseCssPropertyValue(name: string): CssPropertyNode {
     const value: string[] = [];
     while (!this.peekHasType(TokenType.Semicolon)) {
-      const nextTokenType = this.peekHasType(TokenType.CssValue) 
+      const nextTokenType = this.peekHasType(TokenType.CssValue)
         ? TokenType.CssValue
         : TokenType.Identifier;
       value.push(this.parseTokenValue(nextTokenType));
@@ -262,7 +262,7 @@ export class StyloParser {
     if (this.peekHasType(TokenType.Keyword)) {
       return this.parseSlotReferenceNode();
     }
-      
+
     const name = this.parseTokenValue(TokenType.Identifier);
     if (StyloParser.HTML_ELEMENT_START.test((name)[0])) {
       return this.parseHtmlElement(name);
@@ -287,34 +287,49 @@ export class StyloParser {
   }
 
   private parseHtmlElement(name: string): HTMLElementNode {
-    const keyValuePairs = this.parseKeywordValuePairs();
+    const classes: string[] = [];
+    let keyValuePairs: { [key: string]: string } = {};
 
-    this.expect(TokenType.Lbrace);
-
-    if (this.peekHasType(TokenType.String)) {
-      const content = this.parseTokenValue(TokenType.String);
-      this.expect(TokenType.Rbrace);
-      return {
-        type: 'htmlElement',
-        name: name,
-        children: content,
-        slot: keyValuePairs[KW_SLOT_LOW],
-        class: keyValuePairs[KW_CLASS],
-        style: keyValuePairs[KW_STYLE],
+    if (this.peekHasType(TokenType.Lparen)) {
+      this.expect(TokenType.Lparen);
+      
+      if (this.peekHasType(TokenType.Identifier)) {
+        while (!this.peekHasType(TokenType.Comma) && !this.peekHasType(TokenType.Rparen)) {
+          classes.push(this.parseTokenValue(TokenType.Identifier));
+        }  
+        if (this.peekHasType(TokenType.Comma)) {
+          this.expect(TokenType.Comma);
+          keyValuePairs = this.parseKeywordValuePairs();
+        } 
+      } else {
+        keyValuePairs = this.parseKeywordValuePairs();
+      }
+            
+      if (this.peekHasType(TokenType.Rparen)) {
+        this.expect(TokenType.Rparen);
       }
     }
 
-    const children: ComponentChildNode[] = [];
-    while (!this.peekHasType(TokenType.Rbrace)) {
-      children.push(this.parseComponentChild());
+    this.expect(TokenType.Lbrace);
+    let children: ComponentChildNode[] | string = [];
+    if (this.peekHasType(TokenType.String)) {
+      // String content
+      children = this.parseTokenValue(TokenType.String);
+      this.expect(TokenType.Rbrace);
+    } else {
+      // Array content
+      while (!this.peekHasType(TokenType.Rbrace)) {
+        children.push(this.parseComponentChild());
+      }
+      this.expect(TokenType.Rbrace);
     }
-    this.expect(TokenType.Rbrace);
 
     return {
       type: 'htmlElement',
       name: name,
       children,
-      class: keyValuePairs[KW_CLASS],
+      classes,
+      slot: keyValuePairs[KW_SLOT_LOW],
       style: keyValuePairs[KW_STYLE],
     }
   }
@@ -378,20 +393,17 @@ export class StyloParser {
 
   private parseKeywordValuePairs(): { [key: string]: string } {
     const pairs: { [key: string]: string } = {};
-    if (this.peekHasType(TokenType.Lparen)) {
-      this.expect(TokenType.Lparen)
-      while (!this.peekHasType(TokenType.Rparen)) {
-        const keyword = this.parseTokenValue(TokenType.Keyword)
-        this.expect(TokenType.Equal);
-        const value = this.parseTokenValue(TokenType.String)
 
-        pairs[keyword] = value;
+    while (!this.peekHasType(TokenType.Rparen)) {
+      const keyword = this.parseTokenValue(TokenType.Keyword)
+      this.expect(TokenType.Equal);
+      const value = this.parseTokenValue(TokenType.String)
 
-        if (this.peekHasType(TokenType.Comma)) {
-          this.expect(TokenType.Comma);
-        }
+      pairs[keyword] = value;
+
+      if (this.peekHasType(TokenType.Comma)) {
+        this.expect(TokenType.Comma);
       }
-      this.expect(TokenType.Rparen);
     }
     return pairs;
   }

@@ -9,23 +9,31 @@ class root {
 }
 
 component Header {
-  div(class="border-b-2 border-grey") {
-    h1 { "Hello" }
+  div(py-4 border-b-2 border-grey text-center) {
+    h1(text-xl) { "Hello" }
   }
 }
 
+component PrimaryButton(text) {
+  button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor; background: $primaryColor') { "{text}" }
+}
+
+component SecondaryButton(text) {
+  button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor') { "{text}" }
+}
+
 component Footer {
-  div(class="flex justify-between border-t-2 border-grey") { 
-    button { "Cancel" }
-    button { "Ok" }
+  div(p-4 flex justify-end border-t-2 border-grey gap-4) { 
+    SecondaryButton("Cancel")
+    PrimaryButton("Continue")
   }
 }
 
 render component MyApp {
   StdPage(backgroundColor, foregroundColor) {
-    div(class="root") {
+    div(root) {
       Header
-      div {
+      div(p-10) {
         "This is the body"
       }
       Footer

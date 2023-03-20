@@ -80,7 +80,7 @@ export class StyloRenderer {
       ${cssProperties.join("\n      ")}
     }`;
   }
-
+  
   private renderComponent(component: ComponentDefinitionNode): string {
     const content = this.renderComponentChildren(component.children, TAB)
     return `<div data-comp="${component.name}">${content}\n${TAB}</div>`;
@@ -149,11 +149,21 @@ export class StyloRenderer {
     }
 
     const tag = htmlElement.name;
-    const finalStyle = replaceWithArgs(htmlElement.style || "");
+    const finalStyle = htmlElement.style ? replaceWithArgs(htmlElement.style)
+      .split(';')
+      .map(style => {
+        const values = style.split(':');
+        if (values[1].trim().startsWith('$')) {
+          values[1] = `var(--${values[1].trim().substring(1)})`;
+        }
+        return values.join(':');
+      })
+      .join(';')
+      : '';
     const styleAttr = htmlElement.style ? ` style="${finalStyle}"` : "";
     // Custom classes
-    const appliedClasses = htmlElement.class?.split(' ').map((c) => this.applyClasses.get(c) || c).join(' ') || '';
-    const classAttr = htmlElement.class ? ` class="${htmlElement.class} ${appliedClasses}"` : "";
+    const appliedClasses = htmlElement.classes?.map((c) => this.applyClasses.get(c) || c).join(' ') || '';
+    const classAttr = htmlElement.classes && htmlElement.classes.length ? ` class="${htmlElement.classes.join(' ')} ${appliedClasses}"` : "";
 
     let content = '';
     // Render child nodes
