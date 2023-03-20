@@ -1,5 +1,5 @@
 param backgroundColor = '#F5F5F5'
-param foregroundColor = '#333333'
+param foregroundColor = "#333333"
 param primaryColor = '#FFC0CB'
 
 class root {
@@ -8,7 +8,7 @@ class root {
   grid-template-rows: auto 1fr auto;
 }
 
-component PrimaryButton(text) {
+component PrimaryButton() {
   button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor; background: $primaryColor') { "{text}" }
 }
 
@@ -16,13 +16,13 @@ component SecondaryButton(text) {
   button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor') { "{text}" }
 }
 
-component Header(text) {
+component Header(text, hello, hellooe) {
   div(py-4 border-b-2 border-grey text-center) {
     h1(text-xl) { "{text}" }
   }
 }
 
-component Body {
+component Body() {
   div(p-10)  {
     Slot
     div(fixed top-22 right-8 p-4 rounded border-4 border-grey) {
@@ -31,14 +31,17 @@ component Body {
   }
 }
 
-component Footer {
-  div(p-4 flex justify-end border-t-2 border-grey gap-4) { 
-    SecondaryButton("Cancel")
+component Footer() {
+  div(p4 flex) {
+    a { "Click" }
+  }
+  div(p4 flex, style="Hello") { 
+    SecondaryButton("Cancel", "Hello")
     PrimaryButton("Continue")
   }
 }
 
-render component MyApp {
+render component MyApp() {
   StdPage(backgroundColor, foregroundColor) {
     div(root) {
       Header("Stylo")

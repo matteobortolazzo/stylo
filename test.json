@@ -1,0 +1,97 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Stylo",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},		
+		{
+			"include": "#args"
+		},
+		{
+			"begin": "^param\\s+",
+			"end": "\\s",
+			"name": "variable.parameter.stylo"
+		},
+		{
+			"begin": "^class\\s+",
+			"end": "\\s",
+			"name": "entity.name.type.class.stylo"
+		},
+		{
+			"begin": "^component\\s+",
+			"end": "\\s",
+			"name": "entity.name.type.component.stylo"
+		},
+		{
+			"begin": "^render\\s+",
+			"end": "\\s",
+			"name": "entity.name.function.render.stylo"
+		},
+		{
+			"name": "keyword.operator.assignment.stylo",
+			"match": "="
+		},
+		{
+			"name": "punctuation.separator.stylo",
+			"match": ","
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.stylo",
+					"match": "\\b(render|param|class|component|style|@apply|Slot|slot)\\b"
+				}
+			]
+		},
+		"htmlElement": {
+			"name": "entity.name.type.component.html.stylo",
+			"begin": "\\{",
+			"end": "[\\(\\{\\}]",
+			"patterns": [
+				{
+					"name": "entity.name.type.component.html.value.stylo",
+					"match": "\\b[a-z][a-z]*\\b"
+				}
+			]
+		},	
+		"inlineClass": {
+			"name": "entity.name.type.component.css.stylo",
+			"begin": "\\(",
+			"end": "\\)",
+			"patterns": [
+				{
+					"name": "entity.name.type.component.css.value.stylo",
+					"match": "\\b[a-z][\\-a-zA-Z0-9\\s]*\\b"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.stylo",
+			"begin": "(['\"])",
+			"end": "\\1",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.begin.stylo"
+				}
+			},
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.stylo"
+				}
+			},
+			"patterns": [
+				{
+					"name": "constant.character.escape.stylo",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.stylo"
+}

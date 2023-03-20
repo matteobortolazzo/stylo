@@ -1,25 +1,111 @@
 {
-	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-	"name": "Stylo",
-	"patterns": [
-		{
-			"include": "#keywords"
-		},
-		{
-			"include": "#strings"
-		}
-	],
-	"repository": {
-		"keywords": {
-			"patterns": [{
-				"name": "keyword.control.stylo",
-				"match": "\\b(if|while|for|return)\\b"
-			}]
-		},
-		"strings": {
-			"name": "string.quoted.double.stylo",
-			"begin": "\"",
-			"end": "\"",
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Stylo",
+  "scopeName": "source.stylo",
+  "patterns": [
+    {
+      "name": "declaration.param",
+      "match": "^(param)\\s+([\\w-]+)\\s*(=)\\s*(.+)\n",
+      "captures": {
+        "1": {
+          "name": "keyword.param.stylo"
+        },
+        "2": {
+          "name": "entity.name.variable"
+        },
+        "3": {
+          "name": "punctuation.definition.string.begin.stylo"
+        },
+        "4": {
+          "name": "entity.param.value.stylo",
+          "patterns": [
+            {
+              "include": "#strings"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "declaration.class",
+      "begin": "^(class)\\s+([\\w-]+)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.class.stylo"
+        },
+        "2": {
+          "name": "entity.name.function.macro"
+        }
+      },
+      "end": "\\}",
+      "patterns": [
+        {
+          "name": "property",
+          "match": "\\b([\\w-]+):",
+          "captures": {
+            "1": {
+              "name": "support.type.property-name.stylo"
+            }
+          }
+        },
+        {
+          "name": "value",
+          "match": "\\b([^\\n;]+);",
+          "captures": {
+            "1": {
+              "name": "string.unquoted.stylo"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "declaration.component",
+      "begin": "^(render)?\\s*(component)\\s+([A-Z][a-zA-Z]+)\\s*(\\([\\w,\\s]+\\))?\\s*",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.render.stylo"
+        },
+        "2": {
+          "name": "keyword.component.stylo"
+        },
+        "3": {
+          "name": "entity.name.type.class"
+        }
+      },
+      "end": "\\{",
+      "patterns": [
+        {
+          "include": "#componentArg"
+        }
+      ]
+    }
+  ],
+  "repository": {
+    "componentArg": {
+      "begin": "\\(",
+      "end": "\\)",
+      "patterns": [
+        {
+          "name": "variable.parameter",
+          "match": "\\b[a-zA-Z0-9]+\\b"
+        }
+      ]
+    },
+    "strings": {
+			"name": "string.quoted.stylo",
+			"begin": "(['\"])",
+			"end": "\\1",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.begin.stylo"
+				}
+			},
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.stylo"
+				}
+			},
 			"patterns": [
 				{
 					"name": "constant.character.escape.stylo",
@@ -27,6 +113,5 @@
 				}
 			]
 		}
-	},
-	"scopeName": "source.stylo"
+  }
 }
