@@ -1,6 +1,8 @@
 import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants.ts";
 import { Token, TokenType } from './StyloLexer.ts';
 
+//#region Nodes
+
 // Param
 export type ParamNode = {
   type: 'param';
@@ -40,7 +42,7 @@ export type ComponentDefinitionNode = {
   type: 'componentDef';
   display: boolean;
   name: string;
-  args?: string[];
+  args: string[];
   children: ComponentChildNode[];
 };
 
@@ -59,7 +61,7 @@ export type ComponentRefNode = {
   type: 'componentRef';
   name: string;
   slot?: string;
-  args?: ComponentRefArgNode[],
+  args: ComponentRefArgNode[],
   slotChildren?: ComponentChildNode[];
 }
 
@@ -76,6 +78,8 @@ export type SlotRefNode = {
 
 // Root
 export type Node = ParamNode | ClassNode | ComponentDefinitionNode;
+
+//#endregion
 
 export class StyloParser {
   private pos = 0;
@@ -216,7 +220,7 @@ export class StyloParser {
     this.expect(TokenType.Keyword, 'component');
     const name = this.parseTokenValue(TokenType.Identifier);
 
-    let args: string[] | undefined;
+    let args: string[] | undefined = [];
     if (this.peekHasType(TokenType.Lparen)) {
       args = this.parseComponentArguments();
     }
@@ -292,19 +296,19 @@ export class StyloParser {
 
     if (this.peekHasType(TokenType.Lparen)) {
       this.expect(TokenType.Lparen);
-      
+
       if (this.peekHasType(TokenType.Identifier)) {
         while (!this.peekHasType(TokenType.Comma) && !this.peekHasType(TokenType.Rparen)) {
           classes.push(this.parseTokenValue(TokenType.Identifier));
-        }  
+        }
         if (this.peekHasType(TokenType.Comma)) {
           this.expect(TokenType.Comma);
           keyValuePairs = this.parseKeywordValuePairs();
-        } 
+        }
       } else {
         keyValuePairs = this.parseKeywordValuePairs();
       }
-            
+
       if (this.peekHasType(TokenType.Rparen)) {
         this.expect(TokenType.Rparen);
       }
@@ -336,12 +340,19 @@ export class StyloParser {
 
   private parseComponentReferenceNode(name: string): ComponentRefNode {
     const args: ComponentRefArgNode[] = [];
+    let slot: string | undefined;
 
     if (this.peekHasType(TokenType.Lparen)) {
       this.expect(TokenType.Lparen);
       while (!this.peekHasType(TokenType.Rparen)) {
-        const arg = this.parseComponentReferenceArgNode();
-        args.push(arg);
+        if (this.peekHasType(TokenType.Keyword)) {
+          this.expect(TokenType.Keyword, KW_SLOT_LOW);
+          this.expect(TokenType.Equal);
+          slot = this.parseTokenValue(TokenType.String);
+        } else {
+          const arg = this.parseComponentReferenceArgNode();
+          args.push(arg);
+        }
         if (this.peekHasType(TokenType.Comma)) {
           this.expect(TokenType.Comma);
         }
@@ -363,6 +374,7 @@ export class StyloParser {
     return {
       type: 'componentRef',
       name,
+      slot,
       args,
       slotChildren
     }

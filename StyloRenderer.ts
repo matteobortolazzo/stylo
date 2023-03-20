@@ -197,19 +197,19 @@ export class StyloRenderer {
     componentDef: ComponentDefinitionNode,
     parentArgs?: ComponentArgument[]): ComponentArgument[] {
     const currentNodeArgs: ComponentArgument[] = [];
-
-    // Not args
-    if (!componentDef.args || !componentDef.args.length) {
-      return currentNodeArgs;
+    // No args
+    if (!componentDef.args.length && componentRef.args.length) {
+      currentNodeArgs;
     }
+
     // Wrong args
-    if (!componentRef.args || !componentRef.args.length || componentDef.args.length !== componentRef.args.length) {
+    if (componentDef.args.length !== componentRef.args.length) {
       throw new Error(`Component ${componentRef.name} requires ${componentDef.args?.length} arguments, but ${componentRef.args?.length ?? 0} were provided`)
     }
 
-    for (let i = 0; i < componentDef.args.length; i++) {
-      const name = componentDef.args[i];
-      const argNode = componentRef.args[i];
+    for (let i = 0; i < componentDef.args!.length; i++) {
+      const name = componentDef.args![i];
+      const argNode = componentRef.args![i];
 
       // Direct value
       if (argNode.valueType === 'string') {
