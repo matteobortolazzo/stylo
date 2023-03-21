@@ -1,15 +1,14 @@
-import { Stopwatch } from "./Stopwatch.ts";
-import { StyloLexer } from "./StyloLexer.ts";
-import { Node, StyloParser } from "./StyloParser.ts";
-import { StyloRenderer } from "./StyloRenderer.ts";
+import { Stopwatch } from "./Stopwatch";
+import { StyloLexer } from "./StyloLexer";
+import { Node, StyloParser } from "./StyloParser";
+import { StyloRenderer } from "./StyloRenderer";
 
 export class StyloCompiler {
-  private STD_PATH = "./src/libs/std.stylo";
   private stopwatch = new Stopwatch();
   private stdAtsJson: string;
 
-  constructor() {
-    const std = Deno.readTextFileSync(this.STD_PATH);    
+  constructor(stdPath: string) {
+    const std = stdPath;    
     const lexer = new StyloLexer(std);
     const tokens = lexer.tokenize();
     const parser = new StyloParser(tokens);
