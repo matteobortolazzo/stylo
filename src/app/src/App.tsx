@@ -1,24 +1,19 @@
 import React from "react";
 import "./App.css";
-import { Layout } from "antd";
 import { StyloCompiler } from "./compiler/StyloCompiler";
 import CodeEditor from "./CodeEditor";
 import ZoomableCanvas from "./ZoomableCanvas";
 
-const { Content, Sider } = Layout;
-
 const layoutStyle = {  
   height: "100vh",
-}
-const siderStyle = {
-  width: "600px"
+  display: 'grid',
+  gridTemplateColumns: '600px 1fr'
 }
 
-const compiler = new StyloCompiler("../../libs/std.stylo");
+const compiler = new StyloCompiler();
 
 const App = () => {
   const [html, setHtml] = React.useState<string>("");
-  const [error, setError] = React.useState<string>("");
 
 
   const handleCodeChange = (newValue: string) => {
@@ -30,23 +25,15 @@ const App = () => {
       }
 
     } catch(e: any) {
-      console.log(e);
-      setError(e.message);
+      console.log('error', e);
     }
   }
 
   return (
-    <Layout style={layoutStyle}>
-      <Sider style={siderStyle}>
-        H
-        <CodeEditor onChange={handleCodeChange}/>
-      </Sider>
-      <Content>
-        G
-        <div>{error}</div>
-        <ZoomableCanvas source={html} />
-      </Content>
-    </Layout>
+    <div style={layoutStyle}>
+      <CodeEditor onChange={handleCodeChange}/>
+      <ZoomableCanvas html={html} />
+    </div>
   );
 };
 

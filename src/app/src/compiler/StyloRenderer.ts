@@ -42,7 +42,7 @@ export class StyloRenderer {
       appContent += this.renderComponent(component);
     }
 
-    return `<div>
+    return `<div style="height: 600px; width: 800px; border: 1px solid grey" class="pageRender">
   ${styleBlock}
   ${appContent}
 </div>`;

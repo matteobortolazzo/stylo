@@ -4,11 +4,11 @@ param primaryColor = '#FFC0CB'
 
 class root {
   display: grid;
-  height: 100vh;
+  height: 100%;
   grid-template-rows: auto 1fr auto;
 }
 
-component PrimaryButton() {
+component PrimaryButton(text) {
   button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor; background: $primaryColor') { "{text}" }
 }
 
@@ -16,7 +16,7 @@ component SecondaryButton(text) {
   button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor') { "{text}" }
 }
 
-component Header(text, hello, hellooe) {
+component Header(text) {
   div(py-4 border-b-2 border-grey text-center) {
     h1(text-xl) { "{text}" }
   }
@@ -32,24 +32,19 @@ component Body() {
 }
 
 component Footer() {
-  div(p4 flex) {
-    a { "Click" }
-  }
-  div(p4 flex, style="Hello") { 
-    SecondaryButton("Cancel", "Hello")
+  div(p-4 flex justify-end gap-2 border-2) { 
+    SecondaryButton("Cancel")
     PrimaryButton("Continue")
   }
 }
 
 render component MyApp() {
-  StdPage(backgroundColor, foregroundColor) {
-    div(root) {
-      Header("Stylo")
-      Body {
-        span { "This is the body" }
-        div(slot="topRight"){ "Top right" }
-      }
-      Footer
+  div(root) {
+    Header("Stylo")
+    Body {
+      span { "This is the body" }
+      div(slot="topRight"){ "Top right" }
     }
+    Footer
   }
 }

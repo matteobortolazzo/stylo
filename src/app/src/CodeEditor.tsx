@@ -26,14 +26,13 @@ const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
   }, []);
 
   const handleEditorChange = (newValue: string, e: any) => {
-    console.log('onChange:', newValue, e);
     onChange(newValue);
   };
 
   return (
     <MonacoEditor
-      width="800"
-      height="600"
+      width="600"
+      height="100vh"
       language="stylo"
       theme="vs-dark"
       value="// Your code here"
