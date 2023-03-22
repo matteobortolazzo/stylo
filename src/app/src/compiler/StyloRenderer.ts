@@ -190,7 +190,7 @@ export class StyloRenderer {
     const currentNodeArgs: ComponentArgument[] = [];
     // No args
     if (!componentDef.args.length && componentRef.args.length) {
-      currentNodeArgs;
+      return currentNodeArgs;
     }
 
     // Wrong args

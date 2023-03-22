@@ -125,8 +125,8 @@ export class StyloParser {
 
     return {
       type: 'param',
-      name: name,
-      value: value,
+      name,
+      value,
     };
   }
 

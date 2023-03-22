@@ -22,7 +22,7 @@ component Header(text) {
   }
 }
 
-component Body() {
+component Body {
   div(p-10)  {
     Slot
     div(fixed top-22 right-8 p-4 rounded border-4 border-grey) {
