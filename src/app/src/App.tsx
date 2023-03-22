@@ -19,7 +19,6 @@ const App = () => {
   const handleCodeChange = (newValue: string) => {
     try {
       const compiled = compiler.compile(newValue);
-      console.log(compiled);
       if (compiled) {
         setHtml(compiled);
       }
