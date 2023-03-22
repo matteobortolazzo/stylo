@@ -1,6 +1,6 @@
-param backgroundColor = '#F5F5F5'
+param backgroundColor = "#F5F5F5"
 param foregroundColor = "#333333"
-param primaryColor = '#FFC0CB'
+param primaryColor = "#FFC0CB"
 
 class root {
   display: grid;
@@ -9,41 +9,41 @@ class root {
 }
 
 component PrimaryButton(text) {
-  button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor; background: $primaryColor') { "{text}" }
+  (w-24 px-4 border-2 rounded, style="border-color: $primaryColor; background: $primaryColor") { "{text}" }
 }
 
 component SecondaryButton(text) {
-  button(w-24 px-4 border-2 rounded, style='border-color: $primaryColor') { "{text}" }
+  (w-24 px-4 border-2 rounded, style="border-color: $primaryColor") { "{text}" }
 }
 
 component Header(text) {
-  div(py-4 border-b-2 border-grey text-center) {
-    h1(text-xl) { "{text}" }
+  (py-4 border-b-2 border-grey text-center) {
+    (text-xl) { "{text}" }
   }
 }
 
 component Body() {
-  div(p-10)  {
+  (p-10)  {
     Slot
-    div(fixed top-22 right-8 p-4 rounded border-4 border-grey) {
+    (fixed top-22 right-8 p-4 rounded border-4 border-grey) {
       Slot(topRight)
     }
   }
 }
 
 component Footer() {
-  div(p-4 flex justify-end gap-2 border-2) { 
+  (p-4 flex justify-end gap-2 border-2) { 
     SecondaryButton("Cancel")
     PrimaryButton("Continue")
   }
 }
 
 render component MyApp() {
-  div(root) {
+  (root) {
     Header("Stylo")
     Body {
-      span { "This is the body" }
-      div(slot="topRight"){ "Top right" }
+      { "This is the body" }
+      (slot="topRight"){ "Top right" }
     }
     Footer
   }

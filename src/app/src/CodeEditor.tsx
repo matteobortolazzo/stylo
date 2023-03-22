@@ -5,11 +5,18 @@ import * as monaco from 'monaco-editor';
 const registerCustomLanguage = () => {
   monaco.languages.register({ id: 'stylo' });
 
-  monaco.languages.setMonarchTokensProvider('myCustomLanguage', {
+  monaco.languages.setMonarchTokensProvider('stylo', {
     tokenizer: {
       root: [
-        // Define your custom grammar rules here
-        [/(\w+)/, 'variable'],
+        [/\b(class|component|render|param)\b/, 'keyword'],
+        [/\$\w+/, 'variable'],
+        [/"[^"]*"/, 'string'],
+        [/[\w-]+/, 'identifier'],
+        [/[{}()]/, 'delimiter'],
+        [/:/, 'delimiter.colon'],
+        [/;/, 'delimiter.semicolon'],
+        [/\./, 'delimiter.dot'],
+        [/=/, 'delimiter.equals'],
       ],
     },
   });
