@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT, KW_ELEMENT, KW_STYLE } from "./Constants";
 
 export enum TokenType {
   Identifier = 'Identifier',
@@ -33,8 +33,8 @@ export class StyloLexer {
     KW_CLASS,
     KW_STYLE,
     KW_APPLY,
-    KW_SLOT_UPP,
-    KW_SLOT_LOW
+    KW_SLOT,
+    KW_ELEMENT
   ];
 
   private static readonly WHITESPACE = /\s/;

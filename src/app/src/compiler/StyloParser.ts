@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_UPP, KW_STYLE } from "./Constants";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT, KW_STYLE } from "./Constants";
 import { Token, TokenType } from './StyloLexer';
 
 //#region Nodes
@@ -50,7 +50,6 @@ export type ComponentChildNode = HTMLElementNode | ComponentRefNode | SlotRefNod
 
 export type HTMLElementNode = {
   type: 'htmlElement';
-  name: string;
   classes?: string[];
   style?: string;
   slot?: string;
@@ -85,8 +84,6 @@ export class StyloParser {
   private pos = 0;
 
   constructor(private tokens: Token[]) { }
-
-  private static readonly HTML_ELEMENT_START = /[a-z]/;
 
   parse(): Node[] {
     const nodes: Node[] = [];
@@ -264,18 +261,18 @@ export class StyloParser {
 
   private parseComponentChild(): ComponentChildNode {
     if (this.peekHasType(TokenType.Keyword)) {
-      return this.parseSlotReferenceNode();
-    }
 
-    const name = this.parseTokenValue(TokenType.Identifier);
-    if (StyloParser.HTML_ELEMENT_START.test((name)[0])) {
-      return this.parseHtmlElement(name);
+      const name = this.parseTokenValue(TokenType.Keyword);
+      if (name === KW_SLOT)
+        return this.parseSlotReferenceNode();
+      return this.parseHtmlElement();
     }
-    return this.parseComponentReferenceNode(name);
+    
+    return this.parseComponentReferenceNode();
   }
 
   private parseSlotReferenceNode(): SlotRefNode {
-    this.expect(TokenType.Keyword, KW_SLOT_UPP);
+    this.expect(TokenType.Keyword, KW_SLOT);
 
     let name: string | undefined;
     if (this.peekHasType(TokenType.Lparen)) {
@@ -290,7 +287,7 @@ export class StyloParser {
     };
   }
 
-  private parseHtmlElement(name: string): HTMLElementNode {
+  private parseHtmlElement(): HTMLElementNode {
     const classes: string[] = [];
     let keyValuePairs: { [key: string]: string } = {};
 
@@ -330,15 +327,15 @@ export class StyloParser {
 
     return {
       type: 'htmlElement',
-      name: name,
       children,
       classes,
-      slot: keyValuePairs[KW_SLOT_LOW],
+      slot: keyValuePairs[KW_SLOT],
       style: keyValuePairs[KW_STYLE],
     }
   }
 
-  private parseComponentReferenceNode(name: string): ComponentRefNode {
+  private parseComponentReferenceNode(): ComponentRefNode {
+    const name = this.parseTokenValue(TokenType.Identifier);
     const args: ComponentRefArgNode[] = [];
     let slot: string | undefined;
 
@@ -346,7 +343,7 @@ export class StyloParser {
       this.expect(TokenType.Lparen);
       while (!this.peekHasType(TokenType.Rparen)) {
         if (this.peekHasType(TokenType.Keyword)) {
-          this.expect(TokenType.Keyword, KW_SLOT_LOW);
+          this.expect(TokenType.Keyword, KW_SLOT);
           this.expect(TokenType.Equal);
           slot = this.parseTokenValue(TokenType.String);
         } else {

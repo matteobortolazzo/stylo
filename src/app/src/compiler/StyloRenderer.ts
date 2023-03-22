@@ -139,7 +139,6 @@ export class StyloRenderer {
       return input;
     }
 
-    const tag = htmlElement.name;
     const finalStyle = htmlElement.style ? replaceWithArgs(htmlElement.style)
       .split(';')
       .map(style => {
@@ -156,14 +155,17 @@ export class StyloRenderer {
     const appliedClasses = htmlElement.classes?.map((c) => this.applyClasses.get(c) || c).join(' ') || '';
     const classAttr = htmlElement.classes && htmlElement.classes.length ? ` class="${htmlElement.classes.join(' ')} ${appliedClasses}"` : "";
 
+    let tag = '';
     let content = '';
     // Render child nodes
     if (Array.isArray(htmlElement.children)) {
+      tag = 'div';
       const childrenContent = this.renderComponentChildren(htmlElement.children, indent + TAB, parentArgs, parentSlots);
       content = `\n${indent}${TAB}${TAB}${childrenContent}\n${indent}${TAB}`;
     }
     // Replace string templates
     else {
+      tag = 'span';
       content = replaceWithArgs(htmlElement.children as string);
     }
     return `\n${TAB}${indent}<${tag}${classAttr}${styleAttr}>${content}</${tag}>`;
