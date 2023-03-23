@@ -7,7 +7,7 @@ import ZoomableCanvas from "./ZoomableCanvas";
 const layoutStyle = {  
   height: "100vh",
   display: 'grid',
-  gridTemplateColumns: '600px 1fr'
+  gridTemplateColumns: '800px 1fr'
 }
 
 const compiler = new StyloCompiler();
@@ -31,7 +31,7 @@ const App = () => {
   return (
     <div style={layoutStyle}>
       <CodeEditor onChange={handleCodeChange}/>
-      {/* <ZoomableCanvas html={html} /> */}
+      <ZoomableCanvas html={html} />
     </div>
   );
 };

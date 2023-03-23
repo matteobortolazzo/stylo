@@ -6,11 +6,6 @@ const registerCustomLanguage = () => {
   monaco.languages.register({ id: "stylo" });
 
   monaco.languages.setMonarchTokensProvider("stylo", {
-    componentKeywords: [
-      "element",
-      "slot",
-      "style",
-    ],
     operators: ["=", ":"],
 
     // C# style strings
@@ -61,7 +56,7 @@ const registerCustomLanguage = () => {
       ],
 
       paramname: [
-        [/[a-z][\w$-]*/, { token: 'variable.name', next: '@popall' }],
+        [/[a-z][\w$-]*/, { token: 'constant', next: '@popall' }],
       ],
       
       classname: [
@@ -88,8 +83,8 @@ const registerCustomLanguage = () => {
 
       componentChildren: [
         [/{/, { token: 'delimiter.curly', bracket: '@open' }],
-        [/element/, { token: 'keyword', next: '@element' }],
-        [/slot/, { token: 'keyword', next: '@slot' }],
+        [/element/, { token: 'tag', next: '@element' }],
+        [/slot/, { token: 'tag', next: '@slot' }],
         [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
         [/}/, { token: '@rematch', bracket: '@close', next: '@popall' }],
       ],
@@ -109,7 +104,8 @@ const registerCustomLanguage = () => {
 
       elementParams: [     
         [/\(/, { token: 'delimiter.parenthesis', bracket: '@open' }],
-        [/style/, 'keyword'],   
+        [/style/, 'variable.name'],   
+        [/slot/, 'variable.name'],   
         [/"/, 'string', '@string' ],
         [/'/, 'string', '@string' ],
         [/,/, ''],
@@ -121,8 +117,8 @@ const registerCustomLanguage = () => {
         [/{/, { token: 'delimiter.curly', bracket: '@open' }],
         [/"/, 'string', '@string' ],
         [/'/, 'string', '@string' ],
-        [/element/, { token: 'keyword', next: '@element' }],
-        [/slot/, { token: 'keyword', next: '@slot' }],
+        [/element/, { token: 'tag', next: '@element' }],
+        [/slot/, { token: 'tag', next: '@slot' }],
         [/[a-zA-Z][\w]+/, { token: 'type', next: '@element' }],
         [/}/, { token: 'delimiter.curly', bracket: '@close', next: '@pop' }],
       ]
@@ -145,7 +141,7 @@ const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
 
   return (
     <MonacoEditor
-      width="1000"
+      width="800"
       height="100vh"
       language="stylo"
       theme="vs-dark"
