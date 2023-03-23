@@ -17,7 +17,7 @@ export enum TokenType {
 }
 
 export class Token {
-  constructor(public type: TokenType, public value: string | null) {}
+  constructor(public type: TokenType, public value: string | null, public line: number, public index: number) {}
 }
 
 export class StyloLexer {
@@ -116,22 +116,25 @@ export class StyloLexer {
 
   private tokenizeWord(contentRegex: RegExp, type: TokenType, possibleKeyword: boolean): void {
     let word = '';
+    const startIndex = this.pos;
+    const startPosition = this.calculateStartLine(startIndex);
     while (
       this.pos < this.input.length &&
       contentRegex.test(this.input[this.pos])
     ) {
       word += this.input[this.pos++];
-    }    
-
-    if (possibleKeyword && StyloLexer.KEYWORDS.includes(word)) {
-      this.tokens.push(new Token(TokenType.Keyword, word));
-    } else {
-      this.tokens.push(new Token(type, word));
     }
+  
+    const tokenType = possibleKeyword && StyloLexer.KEYWORDS.includes(word)
+      ? TokenType.Keyword
+      : type;
+    this.tokens.push(new Token(tokenType, word, startPosition.line, startPosition.index));
   }
-
+  
   private tokenizeString(quote: string): void {
     let str = '';
+    const startIndex = this.pos;
+    const startPosition = this.calculateStartLine(startIndex);
     this.pos++;
     while (this.pos < this.input.length && this.input[this.pos] !== quote) {
       if (this.input[this.pos] === '\\') {
@@ -144,11 +147,21 @@ export class StyloLexer {
       }
       this.pos++;
     }
-
-    this.tokens.push(new Token(TokenType.String, str));
+  
+    this.tokens.push(new Token(TokenType.String, str, startPosition.line, startPosition.index));
   }
-
+  
   private addToken(type: TokenType): void {
-    this.tokens.push(new Token(type, null));
+    const startIndex = this.pos;
+    const startPosition = this.calculateStartLine(startIndex);
+    this.tokens.push(new Token(type, null, startPosition.line, startPosition.index));
+  }
+  
+  private calculateStartLine(index: number): {line: number, index: number} {
+    const inputUntilIndex = this.input.substring(0, index);
+    const line = inputUntilIndex.split('\n').length;
+    const lastNewlineIndex = inputUntilIndex.lastIndexOf('\n');
+    const indexOnLine = index - (lastNewlineIndex + 1) + 1;
+    return { line, index: indexOnLine };
   }
 }

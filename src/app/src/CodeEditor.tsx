@@ -8,10 +8,12 @@ const registerCustomLanguage = () => {
   monaco.languages.setMonarchTokensProvider('stylo', {
     tokenizer: {
       root: [
-        [/\b(class|component|render|param)\b/, 'keyword'],
-        [/\$\w+/, 'variable'],
-        [/"[^"]*"/, 'string'],
-        [/[\w-]+/, 'identifier'],
+        [/param|class|component|element|style|slot|render/, 'keyword'],
+        [/\b[A-Z][a-zA-Z0-9]*[A-Z][a-zA-Z0-9]*\b/, 'type.identifier'],
+        [/\b[a-z][a-zA-Z0-9-]*\b/, 'classname'],
+        [/\b[a-z][a-zA-Z0-9]+\b/, 'param'],
+        [/(['"])[^']*?\1/, 'string'],
+        [/(['"])[^"]*?\1/, 'string'],
         [/[{}()]/, 'delimiter'],
         [/:/, 'delimiter.colon'],
         [/;/, 'delimiter.semicolon'],

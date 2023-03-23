@@ -82,6 +82,7 @@ export type Node = ParamNode | ClassNode | ComponentDefinitionNode;
 
 export class StyloParser {
   private pos = 0;
+  private componentStart = /[A-Z]/;
 
   constructor(private tokens: Token[]) { }
 
@@ -92,7 +93,7 @@ export class StyloParser {
       const token = this.peek();
 
       if (token.type !== TokenType.Keyword) {
-        throw new Error(`Unexpected token: ${token.type}`);
+        throw new Error(`Unexpected token at '${token.type}' at (${token.line}, ${token.index})`);
       }
 
       if (token.value === KW_PARAM) {
@@ -105,7 +106,7 @@ export class StyloParser {
       } else if (token.value === KW_COMPONENT) {
         nodes.push(this.parseComponentDefinition(false));
       } else {
-        throw new Error(`Unexpected token: ${token.type}`);
+        throw new Error(`Unexpected token '${token.type}' at (${token.line}, ${token.index})`);
       }
     }
 
@@ -261,7 +262,6 @@ export class StyloParser {
 
   private parseComponentChild(): ComponentChildNode {
     if (this.peekHasType(TokenType.Keyword)) {
-
       const name = this.parseTokenValue(TokenType.Keyword);
       if (name === KW_SLOT) {
         return this.parseSlotReferenceNode();
@@ -334,7 +334,12 @@ export class StyloParser {
   }
 
   private parseComponentReferenceNode(): ComponentRefNode {
-    const name = this.parseTokenValue(TokenType.Identifier);
+    const name = this.expect(TokenType.Identifier);
+
+    if (!this.componentStart.test(name.value![0])) {
+      throw new Error(`Invalid component identifier '${name.value}' at (${name.line}, ${name.index})`);
+    }
+
     const args: ComponentRefArgNode[] = [];
     let slot: string | undefined;
 
@@ -369,7 +374,7 @@ export class StyloParser {
 
     return {
       type: 'componentRef',
-      name,
+      name: name.value!,
       slot,
       args,
       slotChildren
@@ -377,6 +382,7 @@ export class StyloParser {
   }
 
   private parseComponentReferenceArgNode(): ComponentRefArgNode {
+    const token = this.peek();
     if (this.peekHasType(TokenType.Identifier)) {
       const value = this.parseTokenValue(TokenType.Identifier);
       return {
@@ -392,7 +398,7 @@ export class StyloParser {
         valueType: 'string'
       }
     }
-    throw new Error('Expected identifier or string');
+    throw new Error(`Expected identifier or string at (${token.line}, ${token.index})`);
   }
 
   //#endregion
@@ -419,9 +425,10 @@ export class StyloParser {
   private expect(type: TokenType, value?: string): Token {
     const token = this.peek();
     if (token.type !== type || (value !== undefined && token.value !== value)) {
-      throw new Error(
-        `Expected token of type ${type} and value ${value}, but got token of type ${token.type} and value ${token.value}`
-      );
+      if (value) {
+        throw new Error(`Expected token of type '${type}' and value '${value}', but got token of type '${token.type}' and value '${token.value}' at (${token.line}, ${token.index})`);
+      }
+      throw new Error(`Expected token of type '${type}', but got token of type '${token.type}' at (${token.line}, ${token.index})`);
     }
     this.pos++;
     return token;
