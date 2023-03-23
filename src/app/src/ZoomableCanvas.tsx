@@ -9,9 +9,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ html: source }) => {
   const [zoom, setZoom] = useState(1);
   const [canvasPosition, setCanvasPosition] = useState({ x: 0, y: 0 });
 
-  function handleZoom(event: any) {
-    event.preventDefault();
-  
+  function handleZoom(event: any) {  
     const container = event.currentTarget;
     const canvas = container.firstChild;
   

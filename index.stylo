@@ -13,7 +13,7 @@ component PrimaryButton(text) {
 }
 
 component SecondaryButton(text) {
-  elementw-24 px-4 border-2 rounded, style='border-color: $primaryColor') { "{text}" }
+  element(w-24 px-4 border-2 rounded, style='border-color: $primaryColor') { "{text}" }
 }
 
 component Header(text) {

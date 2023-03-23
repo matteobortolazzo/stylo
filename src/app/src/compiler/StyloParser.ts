@@ -263,17 +263,16 @@ export class StyloParser {
     if (this.peekHasType(TokenType.Keyword)) {
 
       const name = this.parseTokenValue(TokenType.Keyword);
-      if (name === KW_SLOT)
+      if (name === KW_SLOT) {
         return this.parseSlotReferenceNode();
+      }
       return this.parseHtmlElement();
     }
-    
+
     return this.parseComponentReferenceNode();
   }
 
   private parseSlotReferenceNode(): SlotRefNode {
-    this.expect(TokenType.Keyword, KW_SLOT);
-
     let name: string | undefined;
     if (this.peekHasType(TokenType.Lparen)) {
       this.expect(TokenType.Lparen);
