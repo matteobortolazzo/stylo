@@ -97,13 +97,14 @@ const registerCustomLanguage = () => {
       slot: [
         [/\(/, { token: 'delimiter.parenthesis', bracket: '@open', next: '@elementParams' }],
         [/\)/, { token: '@rematch', bracket: '@close', next: '@pop' }],
+        [/[a-zA-Z][\w]+/, { token: '@rematch', next: '@pop' }],
       ],
 
       element: [
         [/\(/, { token: 'delimiter.parenthesis', bracket: '@open', next: '@elementParams' }],
-        [/\)/, { token: '@rematch', bracket: '@close', next: '@pop' }],
         [/{/, { token: 'delimiter.curly', next: '@content' }],
         [/}/, { token: '@rematch', bracket: '@close', next: '@pop' }],
+        [/[a-zA-Z][\w]+/, { token: '@rematch', next: '@pop' }],
       ],
 
       elementParams: [     
@@ -122,8 +123,8 @@ const registerCustomLanguage = () => {
         [/'/, 'string', '@string' ],
         [/element/, { token: 'keyword', next: '@element' }],
         [/slot/, { token: 'keyword', next: '@slot' }],
-        [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
-        [/}/, { token: '@rematch', bracket: '@close', next: '@pop' }],
+        [/[a-zA-Z][\w]+/, { token: 'type', next: '@element' }],
+        [/}/, { token: 'delimiter.curly', bracket: '@close', next: '@pop' }],
       ]
     },
   });

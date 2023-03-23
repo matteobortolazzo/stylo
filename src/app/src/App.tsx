@@ -31,7 +31,7 @@ const App = () => {
   return (
     <div style={layoutStyle}>
       <CodeEditor onChange={handleCodeChange}/>
-      <ZoomableCanvas html={html} />
+      {/* <ZoomableCanvas html={html} /> */}
     </div>
   );
 };
