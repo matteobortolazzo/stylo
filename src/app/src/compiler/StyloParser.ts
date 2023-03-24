@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT, KW_STYLE } from "./Constants";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_HIGH, KW_STYLE } from "./Constants";
 import { Token, TokenType } from './StyloLexer';
 
 //#region Nodes
@@ -263,7 +263,7 @@ export class StyloParser {
   private parseComponentChild(): ComponentChildNode {
     if (this.peekHasType(TokenType.Keyword)) {
       const name = this.parseTokenValue(TokenType.Keyword);
-      if (name === KW_SLOT) {
+      if (name === KW_SLOT_HIGH) {
         return this.parseSlotReferenceNode();
       }
       return this.parseHtmlElement();
@@ -328,7 +328,7 @@ export class StyloParser {
       type: 'htmlElement',
       children,
       classes,
-      slot: keyValuePairs[KW_SLOT],
+      slot: keyValuePairs[KW_SLOT_LOW],
       style: keyValuePairs[KW_STYLE],
     }
   }
@@ -347,7 +347,7 @@ export class StyloParser {
       this.expect(TokenType.Lparen);
       while (!this.peekHasType(TokenType.Rparen)) {
         if (this.peekHasType(TokenType.Keyword)) {
-          this.expect(TokenType.Keyword, KW_SLOT);
+          this.expect(TokenType.Keyword, KW_SLOT_LOW);
           this.expect(TokenType.Equal);
           slot = this.parseTokenValue(TokenType.String);
         } else {

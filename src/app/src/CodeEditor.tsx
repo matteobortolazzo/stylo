@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from "react";
+import { FC, useEffect } from "react";
 import MonacoEditor from "react-monaco-editor";
 import * as monaco from "monaco-editor";
 
@@ -83,8 +83,8 @@ const registerCustomLanguage = () => {
 
       componentChildren: [
         [/{/, { token: 'delimiter.curly', bracket: '@open' }],
-        [/element/, { token: 'tag', next: '@element' }],
-        [/slot/, { token: 'tag', next: '@slot' }],
+        [/block/, { token: 'tag', next: '@element' }],
+        [/Slot/, { token: 'tag', next: '@slot' }],
         [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
         [/}/, { token: '@rematch', bracket: '@close', next: '@popall' }],
       ],
@@ -117,8 +117,8 @@ const registerCustomLanguage = () => {
         [/{/, { token: 'delimiter.curly', bracket: '@open' }],
         [/"/, 'string', '@string' ],
         [/'/, 'string', '@string' ],
-        [/element/, { token: 'tag', next: '@element' }],
-        [/slot/, { token: 'tag', next: '@slot' }],
+        [/block/, { token: 'tag', next: '@element' }],
+        [/Slot/, { token: 'type', next: '@slot' }],
         [/[a-zA-Z][\w]+/, { token: 'type', next: '@element' }],
         [/}/, { token: 'delimiter.curly', bracket: '@close', next: '@pop' }],
       ]
