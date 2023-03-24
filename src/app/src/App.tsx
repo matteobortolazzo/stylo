@@ -3,35 +3,37 @@ import "./App.css";
 import { StyloCompiler } from "./compiler/StyloCompiler";
 import CodeEditor from "./CodeEditor";
 import ZoomableCanvas from "./ZoomableCanvas";
+import { RenderResult } from "./compiler/StyloRenderer";
 
-const layoutStyle = {  
+const layoutStyle = {
   height: "100vh",
-  display: 'grid',
-  gridTemplateColumns: '800px 1fr'
-}
+  display: "grid",
+  gridTemplateColumns: "800px 1fr",
+};
 
 const compiler = new StyloCompiler();
 
 const App = () => {
-  const [html, setHtml] = React.useState<string>("");
-
+  const [render, setRender] = React.useState<RenderResult>({
+    style: "",
+    components: [],
+  });
 
   const handleCodeChange = (newValue: string) => {
     try {
-      const compiled = compiler.compile(newValue);
-      if (compiled) {
-        setHtml(compiled);
+      const renderResult = compiler.compile(newValue);
+      if (renderResult) {
+        setRender(renderResult);
       }
-
-    } catch(e: any) {
-      console.log('error', e);
+    } catch (e: any) {
+      console.log("error", e);
     }
-  }
+  };
 
   return (
     <div style={layoutStyle}>
-      <CodeEditor onChange={handleCodeChange}/>
-      <ZoomableCanvas html={html} />
+      <CodeEditor onChange={handleCodeChange} />
+      <ZoomableCanvas render={render} />
     </div>
   );
 };

@@ -1,11 +1,12 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import DOMPurify from "dompurify";
+import { RenderResult } from "./compiler/StyloRenderer";
 
 type ZoomableCanvasProps = {
-  html: string;
+  render: RenderResult;
 };
 
-const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ html: source }) => {
+const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render: source }) => {
   const [zoom, setZoom] = useState(1);
   const [canvasPosition, setCanvasPosition] = useState({ x: 0, y: 0 });
 

@@ -1,12 +1,12 @@
 import { Stopwatch } from "./Stopwatch";
 import { StyloLexer } from "./StyloLexer";
 import { StyloParser } from "./StyloParser";
-import { StyloRenderer } from "./StyloRenderer";
+import { RenderResult, StyloRenderer } from "./StyloRenderer";
 
 export class StyloCompiler {
   private stopwatch = new Stopwatch();
 
-  compile(input: string): string | undefined {
+  compile(input: string): RenderResult | undefined {
     try {      
       console.log(`Compiling...`);
       this.stopwatch.start();
@@ -15,13 +15,13 @@ export class StyloCompiler {
       const parser = new StyloParser(tokens);
       const ast = parser.parse();
       const renderer = new StyloRenderer(ast);
-      const html = renderer.render();
+      const render = renderer.render();
 
       const elapsedTime = this.stopwatch.stop();
       console.log(`%cCompiled in ${elapsedTime} ms`, "color: green");
       console.log();
 
-      return html;
+      return render;
     }
     catch (e) {
       console.log(`%c${e}`, "color: red");

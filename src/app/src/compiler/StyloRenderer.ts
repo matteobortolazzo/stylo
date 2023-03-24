@@ -9,6 +9,11 @@ type ComponentArgument = {
   value: string;
 }
 
+export type RenderResult = {
+  style: string;
+  components: string[];
+}
+
 export class StyloRenderer {
   private parameters = new Map<string, string>();
   private applyClasses = new Map<string, string>();
@@ -16,18 +21,8 @@ export class StyloRenderer {
 
   constructor(private ast: Node[]) { }
 
-  render(): string {
-    const cssVariables = this.ast
-      .filter((n) => n.type === "param")
-      .map(n => this.renderParameters(n as ParamNode))
-      .join("\n");
-    const customClasses = this.ast
-      .filter((n) => n.type === "class")
-      .map(n => this.renderCustomClass(n as ClassNode))
-      .join("\n");
-
-    const styleContent = cssVariables ? `:root {\n${cssVariables}\n${TAB}${TAB}}` : "";
-    const styleBlock = `<style>\n${TAB}${TAB}${styleContent}\n${TAB}${customClasses}\n${TAB}</style>`;
+  render(): RenderResult {
+    const style = this.renderStyleBlock();
 
     const componentDefinitionNodes = this.ast
       .filter((n) => n.type === "componentDef")
@@ -37,15 +32,30 @@ export class StyloRenderer {
       this.components.set(component.name, component);
     }
 
-    let appContent = '';
-    for (const component of componentDefinitionNodes.filter((c) => c.display)) {
-      appContent += this.renderComponent(component);
+    const components: string[] = [];
+    for (const componentDefinition of componentDefinitionNodes.filter((c) => c.display)) {
+      const component = this.renderComponent(componentDefinition);
+      components.push(component);
     }
 
-    return `<div style="height: 600px; width: 800px; border: 1px solid grey" class="pageRender">
-  ${styleBlock}
-  ${appContent}
-</div>`;
+    return {
+      style,
+      components
+    }
+  }
+
+  private renderStyleBlock(): string {
+    const cssVariables = this.ast
+    .filter((n) => n.type === "param")
+    .map(n => this.renderParameters(n as ParamNode))
+    .join("\n");
+  const customClasses = this.ast
+    .filter((n) => n.type === "class")
+    .map(n => this.renderCustomClass(n as ClassNode))
+    .join("\n");
+
+    const styleContent = cssVariables ? `:root {\n${cssVariables}\n${TAB}${TAB}}` : "";
+    return `<style>\n${TAB}${TAB}${styleContent}\n${TAB}${customClasses}\n${TAB}</style>`;
   }
 
   private renderParameters(node: ParamNode): string {
