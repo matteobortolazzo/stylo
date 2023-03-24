@@ -65,7 +65,12 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render: source }) => {
     document.addEventListener("mouseup", handlePanEnd);
   }
 
-  const sanitizedHtml = DOMPurify.sanitize(source);
+  const components = source.components.join("\n")
+  const container = `<div style="display: flex; gap: 100px">
+    ${source.style}
+    ${components}
+  </div>`
+  const sanitizedHtml = DOMPurify.sanitize(container);
 
   return (
     <div

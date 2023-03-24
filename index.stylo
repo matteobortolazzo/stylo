@@ -3,9 +3,11 @@ param foregroundColor = "#333333"
 param primaryColor = '#FFC0CB'
 
 class root {
+  height: 600px;
+  width: 800px;
   display: grid;
-  height: 100%;
   grid-template-rows: auto 1fr auto;
+  border: 1px solid black;
 }
 
 component PrimaryButton(text) {
@@ -35,16 +37,5 @@ component Footer {
   block(p-4 flex justify-end gap-2 border-2) { 
     SecondaryButton("Cancel")
     PrimaryButton("Continue")
-  }
-}
-
-render component MyApp {
-  block(root) {
-    Header("Stylo")
-    Body {
-      block { "This is the body" }
-      block (slot="topRight") { "Top right" }
-    }
-    Footer
   }
 }
