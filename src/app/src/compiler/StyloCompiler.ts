@@ -1,21 +1,10 @@
 import { Stopwatch } from "./Stopwatch";
 import { StyloLexer } from "./StyloLexer";
-import { Node, StyloParser } from "./StyloParser";
+import { StyloParser } from "./StyloParser";
 import { StyloRenderer } from "./StyloRenderer";
 
 export class StyloCompiler {
   private stopwatch = new Stopwatch();
-  private stdAtsJson: string;
-
-  constructor() {
-    // const std = stdPath;    
-    // const lexer = new StyloLexer(std);
-    // const tokens = lexer.tokenize();
-    // const parser = new StyloParser(tokens);
-    // const ast = parser.parse();
-    // this.stdAtsJson = JSON.stringify(ast);
-    this.stdAtsJson = '';
-  }
 
   compile(input: string): string | undefined {
     try {      
@@ -25,9 +14,6 @@ export class StyloCompiler {
       const tokens = lexer.tokenize();
       const parser = new StyloParser(tokens);
       const ast = parser.parse();
-
-      // const stdAst: Node[] = JSON.parse(this.stdAtsJson);
-      // const renderer = new StyloRenderer([...stdAst, ...ast]);
       const renderer = new StyloRenderer(ast);
       const html = renderer.render();
 
