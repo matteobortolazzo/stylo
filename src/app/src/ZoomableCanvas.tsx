@@ -19,42 +19,28 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
 
   function handleZoom(e: React.WheelEvent<HTMLDivElement>) {
     const container = e.currentTarget;
-    const target = canvasRef.current!;
-    const size = {
-      w: target.getBoundingClientRect().width,
-      h: target.getBoundingClientRect().height,
-    };
-
     const offset = container.getBoundingClientRect();
     zoomPoint.x = e.pageX - offset.left;
     zoomPoint.y = e.pageY - offset.top;
 
     e.preventDefault();
 
-    // cap the delta to [-1,1] for cross-browser consistency
+    // Cap the delta to [-1,1] for cross-browser consistency
     const delta = Math.max(-1, Math.min(1, -e.deltaY));
 
-    // determine the point on where the slide is zoomed in
+    // Determine the point on where the slide is zoomed in
     zoomTarget.x = (zoomPoint.x - pos.x) / scale;
     zoomTarget.y = (zoomPoint.y - pos.y) / scale;
 
-    // apply zoom
+    // Apply zoom
     const newScale = scale + delta * factor * scale;
     setScale(Math.max(minScale, Math.min(maxScale, newScale)));
 
-    // calculate x and y based on zoom
+    // Calculate x and y based on zoom
     const newPos = {
       x: -zoomTarget.x * newScale + zoomPoint.x,
       y: -zoomTarget.y * newScale + zoomPoint.y,
     };
-
-    // Make sure the slide stays in its container area when zooming out
-    if (newPos.x > 0) newPos.x = 0;
-    if (newPos.x + size.w * newScale < size.w)
-      newPos.x = -size.w * (newScale - 1);
-    if (newPos.y > 0) newPos.y = 0;
-    if (newPos.y + size.h * newScale < size.h)
-      newPos.y = -size.h * (newScale - 1);
 
     setPos(newPos);
   }
@@ -95,6 +81,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
     <div
       id="canvasContainer"
       style={{
+        cursor: "grab",
         position: "relative",
         overflow: "hidden",
         width: "100%",
@@ -107,7 +94,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
         id="canvas"
         ref={canvasRef}
         style={{
-          transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
+          transform: `translate(${pos.x}px, ${pos.y}px) translateZ(0) scale(${scale})`,
           transformOrigin: "0 0",
           position: "absolute",
           left: 0,
