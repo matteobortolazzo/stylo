@@ -11,41 +11,41 @@ class root {
 }
 
 component PrimaryButton(text) {
-  block(w-24 px-4 border-2 rounded, style='border-color: $primaryColor; background: $primaryColor') { "{text}" }
+  button(class="w-24 px-4 border-2 rounded", style='border-color: $primaryColor; background: $primaryColor') { "{text}" }
 }
 
 component SecondaryButton(text) {
-  block(w-24 px-4 border-2 rounded, style='border-color: $primaryColor') { "{text}" }
+  button(class="w-24 px-4 border-2 rounded", style='border-color: $primaryColor') { "{text}" }
 }
 
 component Header(text) {
-  block(py-4 border-b-2 border-grey text-center) {
-    block(text-xl) { "{text}" }
+  block(class="py-4 border-b-2 border-grey text-center") {
+    h1(class="text-xl") { "{text}" }
   }
 }
 
 component Body {
-  block(p-10)  {
+  container(class="p-10")  {
     Slot
-    block(absolute top-22 right-8 p-4 rounded border-4 border-grey) {
-      Slot(topRight)
+    topRightContainer(class="absolute top-22 right-8 p-4 rounded border-4 border-grey") {
+      Slot(name="topRight")
     }
   }
 }
 
 component Footer {
-  block(p-4 flex justify-end gap-2 border-2) { 
+  block(class="p-4 flex justify-end gap-2 border-2") { 
     SecondaryButton("Cancel")
     PrimaryButton("Continue")
   }
 }
 
 render component MyApp {
-  block(root) {
-    Header("Stylo")
+  block(class="root") {
+    Header("Stylo", class="header-test")
     Body {
       block { "This is the body" }
-      block (slot="topRight") { "Top right" }
+      topRight (slot="topRight") { "Top right" }
     }
     Footer
   }

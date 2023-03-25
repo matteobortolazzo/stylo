@@ -1,8 +1,7 @@
 import { TAB } from "./Constants";
-import { ParamNode, ComponentDefinitionNode, ComponentRefNode, HTMLElementNode, SlotRefNode } from "./StyloParser";
+import { ParamNode, ComponentDefinitionNode, ComponentChildNode } from "./StyloParser";
 import { ClassNode } from "./StyloParser";
 import { Node } from "./StyloParser";
-import { ComponentChildNode } from "./StyloParser";
 
 type ComponentArgument = {
   name: string;
@@ -16,7 +15,6 @@ export type RenderResult = {
 
 export class StyloRenderer {
   private parameters = new Map<string, string>();
-  private applyClasses = new Map<string, string>();
   private components = new Map<string, ComponentDefinitionNode>();
 
   constructor(private ast: Node[]) { }
@@ -72,8 +70,6 @@ export class StyloRenderer {
         cssProperties.push(`${property.name}: ${value};`);
       } else if (property.type === "cssVariableNode") {
         cssProperties.push(`${property.name}: var(--${property.value});`);
-      } else if (property.type === "apply") {
-        this.applyClasses.set(node.name, property.value.join(' '))
       }
     }
 
@@ -88,10 +84,14 @@ export class StyloRenderer {
   }
 
   private renderComponentChildren(
-    children: ComponentChildNode[],
+    children: ComponentChildNode[] | string,
     indent: string,
     parentArgs?: ComponentArgument[],
     parentSlots?: ComponentChildNode[]): string {
+
+    if (typeof children === "string") {
+      return children;
+    }
     return children
       .map(child => this.renderComponentChild(child, indent, parentArgs, parentSlots))
       .join("");
@@ -103,14 +103,14 @@ export class StyloRenderer {
     parentArgs?: ComponentArgument[],
     parentSlots?: ComponentChildNode[]): string {
     switch (child.type) {
-      case "htmlElement": {
-        return this.renderHtmlElement(child as HTMLElementNode, indent, parentArgs, parentSlots)
+      case "block": {
+        return this.renderBlock(child, indent, parentArgs, parentSlots)
       }
       case "componentRef": {
-        return this.renderComponentRef(child as ComponentRefNode, indent, parentArgs);
+        return this.renderComponentRef(child, indent, parentArgs);
       }
       case "slotRef": {
-        return this.renderSlotRef(child as SlotRefNode, indent, parentArgs, parentSlots);
+        return this.renderSlotRef(child, indent, parentArgs, parentSlots);
       }
       default:
         return "";
@@ -118,7 +118,7 @@ export class StyloRenderer {
   }
 
   private renderSlotRef(
-    slotRef: SlotRefNode,
+    slotRef: ComponentChildNode,
     indent: string,
     parentArgs?: ComponentArgument[],
     parentSlots?: ComponentChildNode[]): string {
@@ -134,8 +134,8 @@ export class StyloRenderer {
     return this.renderComponentChild(slotNode, indent, parentArgs, parentSlots);
   }
 
-  private renderHtmlElement(
-    htmlElement: HTMLElementNode,
+  private renderBlock(
+    block: ComponentChildNode,
     indent: string,
     parentArgs?: ComponentArgument[],
     parentSlots?: ComponentChildNode[]): string {
@@ -149,7 +149,7 @@ export class StyloRenderer {
       return input;
     }
 
-    const finalStyle = htmlElement.style ? replaceWithArgs(htmlElement.style)
+    const finalStyle = block.style ? replaceWithArgs(block.style)
       .split(';')
       .map(style => {
         const values = style.split(':');
@@ -160,53 +160,51 @@ export class StyloRenderer {
       })
       .join(';')
       : '';
-    const styleAttr = htmlElement.style ? ` style="${finalStyle}"` : "";
-    // Custom classes
-    const appliedClasses = htmlElement.classes?.map((c) => this.applyClasses.get(c) || c).join(' ') || '';
-    const classAttr = htmlElement.classes && htmlElement.classes.length ? ` class="${htmlElement.classes.join(' ')} ${appliedClasses}"` : "";
+    const styleAttr = block.style ? ` style="${finalStyle}"` : "";
+    const classAttr = block.class ? ` class="${block.class}"` : "";
 
     let tag = '';
     let content = '';
     // Render child nodes
-    if (Array.isArray(htmlElement.children)) {
+    if (Array.isArray(block.children)) {
       tag = 'div';
-      const childrenContent = this.renderComponentChildren(htmlElement.children, indent + TAB, parentArgs, parentSlots);
+      const childrenContent = this.renderComponentChildren(block.children, indent + TAB, parentArgs, parentSlots);
       content = `\n${indent}${TAB}${TAB}${childrenContent}\n${indent}${TAB}`;
     }
     // Replace string templates
     else {
       tag = 'span';
-      content = replaceWithArgs(htmlElement.children as string);
+      content = replaceWithArgs(block.children as string);
     }
     return `\n${TAB}${indent}<${tag}${classAttr}${styleAttr}>${content}</${tag}>`;
   }
 
   private renderComponentRef(
-    componentRef: ComponentRefNode,
+    componentRef: ComponentChildNode,
     indent: string,
     parentArgs?: ComponentArgument[]): string {
-    const componentDef = this.components.get(componentRef.name)
+    const componentDef = this.components.get(componentRef.name!)
     if (!componentDef) {
       throw new Error(`Component ${componentRef.name} is not defined`)
     }
 
     const componentArguments = this.getComponentArguments(componentRef, componentDef, parentArgs);
     const componentChildrenToRender = this.getComponentChildNodesWithSlots(componentRef, componentDef);
-    return this.renderComponentChildren(componentChildrenToRender, indent, componentArguments, componentRef.slotChildren);
+    return this.renderComponentChildren(componentChildrenToRender, indent, componentArguments, componentRef.children as ComponentChildNode[]);
   }
 
   private getComponentArguments(
-    componentRef: ComponentRefNode,
+    componentRef: ComponentChildNode,
     componentDef: ComponentDefinitionNode,
     parentArgs?: ComponentArgument[]): ComponentArgument[] {
     const currentNodeArgs: ComponentArgument[] = [];
     // No args
-    if (!componentDef.args.length && componentRef.args.length) {
+    if (!componentDef.args.length && componentRef.args!.length) {
       return currentNodeArgs;
     }
 
     // Wrong args
-    if (componentDef.args.length !== componentRef.args.length) {
+    if (componentDef.args.length !== componentRef.args!.length) {
       throw new Error(`Component ${componentRef.name} requires ${componentDef.args?.length} arguments, but ${componentRef.args?.length ?? 0} were provided`)
     }
 
@@ -235,9 +233,9 @@ export class StyloRenderer {
   }
 
   private getComponentChildNodesWithSlots(
-    componentRef: ComponentRefNode,
+    componentRef: ComponentChildNode,
     componentDef: ComponentDefinitionNode): ComponentChildNode[] {
-    const componentRefChildren = componentRef.slotChildren;
+    const componentRefChildren = componentRef.children;
 
     // No slots provided
     if (!componentRefChildren || !componentRefChildren.length) {
@@ -256,7 +254,7 @@ export class StyloRenderer {
         continue;
       }
 
-      const slotNode = this.getComponentSlotDef(child, componentRefChildren);
+      const slotNode = this.getComponentSlotDef(child, componentRefChildren as ComponentChildNode[]);
       if (slotNode) {
         componentDefChildren[i] = slotNode;
       }
@@ -265,7 +263,7 @@ export class StyloRenderer {
     return componentDefChildren;
   }
 
-  private getComponentSlotDef(slotRef: SlotRefNode, slotDefinitions?: ComponentChildNode[]): ComponentChildNode | undefined {
+  private getComponentSlotDef(slotRef: ComponentChildNode, slotDefinitions?: ComponentChildNode[]): ComponentChildNode | undefined {
     if (!slotDefinitions) {
       return undefined;
     }

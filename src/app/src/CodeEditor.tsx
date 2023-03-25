@@ -132,10 +132,7 @@ type CodeEditorProps = {
 };
 
 const debounceMs = 300;
-const initialValue = `// App button
-render component Button {
-    block(px-8 py-4 border-2 border-grey rounded) { "Click!" }
-}`;
+const initialValue = `// Add code here`;
 
 const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
   const [editorHeight, setEditorHeight] = useState(window.innerHeight);

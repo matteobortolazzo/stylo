@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_HIGH, KW_STYLE } from "./Constants";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_HIGH, KW_STYLE, KW_NAME } from "./Constants";
 import { Token, TokenType } from './StyloLexer';
 
 //#region Nodes
@@ -46,33 +46,20 @@ export type ComponentDefinitionNode = {
   children: ComponentChildNode[];
 };
 
-export type ComponentChildNode = HTMLElementNode | ComponentRefNode | SlotRefNode;
-
-export type HTMLElementNode = {
-  type: 'htmlElement';
-  classes?: string[];
+export type ComponentChildNode = {
+  type: 'block' | 'componentRef' | 'slotRef';
+  name?: string;
+  class?: string;
   style?: string;
   slot?: string;
+  args?: ComponentRefArgNode[],
   children?: ComponentChildNode[] | string;
-}
-
-export type ComponentRefNode = {
-  type: 'componentRef';
-  name: string;
-  slot?: string;
-  args: ComponentRefArgNode[],
-  slotChildren?: ComponentChildNode[];
 }
 
 export type ComponentRefArgNode = {
   type: 'componentRefArg';
   value: string;
   valueType: 'string' | 'parameter'
-}
-
-export type SlotRefNode = {
-  type: 'slotRef';
-  name?: string;
 }
 
 // Root
@@ -261,123 +248,97 @@ export class StyloParser {
   }
 
   private parseComponentChild(): ComponentChildNode {
-    if (this.peekHasType(TokenType.Keyword)) {
-      const name = this.parseTokenValue(TokenType.Keyword);
-      if (name === KW_SLOT_HIGH) {
-        return this.parseSlotReferenceNode();
-      }
-      return this.parseHtmlElement();
-    }
+    const currentToken = this.expect(TokenType.Identifier);
+    const name = currentToken.value!
 
-    return this.parseComponentReferenceNode();
-  }
+    const type = name !== KW_SLOT_HIGH
+      ? this.componentStart.test(name![0]) ? 'componentRef' : 'block'
+      : 'slotRef'
 
-  private parseSlotReferenceNode(): SlotRefNode {
-    let name: string | undefined;
+    const args: ComponentRefArgNode[] = [];
+    let keyValuePairs: { [key: string]: string } = {};
+
+    // Between (...)
     if (this.peekHasType(TokenType.Lparen)) {
       this.expect(TokenType.Lparen);
-      name = this.parseTokenValue(TokenType.Identifier);
+
+      // Parse component args
+      while (this.peekHasType(TokenType.Identifier) || this.peekHasType(TokenType.String)) {
+        args.push(this.parseComponentReferenceArgNode());
+        if (this.peekHasType(TokenType.Comma)) {
+          this.expect(TokenType.Comma);
+        }
+      }
+
+      // Parse slot, class, style
+      keyValuePairs = this.parseKeywordValuePairs();
       this.expect(TokenType.Rparen);
     }
 
-    return {
-      type: 'slotRef',
-      name
-    };
-  }
-
-  private parseHtmlElement(): HTMLElementNode {
-    const classes: string[] = [];
-    let keyValuePairs: { [key: string]: string } = {};
-
-    if (this.peekHasType(TokenType.Lparen)) {
-      this.expect(TokenType.Lparen);
-
-      if (this.peekHasType(TokenType.Identifier)) {
-        while (!this.peekHasType(TokenType.Comma) && !this.peekHasType(TokenType.Rparen)) {
-          classes.push(this.parseTokenValue(TokenType.Identifier));
-        }
-        if (this.peekHasType(TokenType.Comma)) {
-          this.expect(TokenType.Comma);
-          keyValuePairs = this.parseKeywordValuePairs();
-        }
-      } else {
-        keyValuePairs = this.parseKeywordValuePairs();
-      }
-
-      if (this.peekHasType(TokenType.Rparen)) {
-        this.expect(TokenType.Rparen);
-      }
-    }
-
-    this.expect(TokenType.Lbrace);
+    // Parse content
     let children: ComponentChildNode[] | string = [];
-    if (this.peekHasType(TokenType.String)) {
-      // String content
-      children = this.parseTokenValue(TokenType.String);
-      this.expect(TokenType.Rbrace);
-    } else {
-      // Array content
+    if (this.peekHasType(TokenType.Lbrace)) {
+      this.expect(TokenType.Lbrace);
+
       while (!this.peekHasType(TokenType.Rbrace)) {
+        if (this.peekHasType(TokenType.String)) {
+          children = this.parseTokenValue(TokenType.String);
+          break;
+        }
         children.push(this.parseComponentChild());
       }
       this.expect(TokenType.Rbrace);
     }
 
-    return {
-      type: 'htmlElement',
-      children,
-      classes,
-      slot: keyValuePairs[KW_SLOT_LOW],
-      style: keyValuePairs[KW_STYLE],
-    }
-  }
+    const slotAttr = keyValuePairs[KW_SLOT_LOW];
+    const classAttr = keyValuePairs[KW_CLASS];
+    const styleAttr = keyValuePairs[KW_STYLE];
+    const nameAttr = keyValuePairs[KW_NAME];
 
-  private parseComponentReferenceNode(): ComponentRefNode {
-    const name = this.expect(TokenType.Identifier);
-
-    if (!this.componentStart.test(name.value![0])) {
-      throw new Error(`Invalid component identifier '${name.value}' at (${name.line}, ${name.index})`);
-    }
-
-    const args: ComponentRefArgNode[] = [];
-    let slot: string | undefined;
-
-    if (this.peekHasType(TokenType.Lparen)) {
-      this.expect(TokenType.Lparen);
-      while (!this.peekHasType(TokenType.Rparen)) {
-        if (this.peekHasType(TokenType.Keyword)) {
-          this.expect(TokenType.Keyword, KW_SLOT_LOW);
-          this.expect(TokenType.Equal);
-          slot = this.parseTokenValue(TokenType.String);
-        } else {
-          const arg = this.parseComponentReferenceArgNode();
-          args.push(arg);
-        }
-        if (this.peekHasType(TokenType.Comma)) {
-          this.expect(TokenType.Comma);
-        }
+    if (type === 'slotRef') {
+      if (children.length > 0) {
+        throw new Error(`Slot cannot have children at (${currentToken.line}, ${currentToken.index})`);
       }
-      this.expect(TokenType.Rparen);
-    }
-
-    // Define Slot
-    const slotChildren: ComponentChildNode[] = [];
-    if (this.peekHasType(TokenType.Lbrace)) {
-      this.expect(TokenType.Lbrace);
-
-      while (!this.peekHasType(TokenType.Rbrace)) {
-        slotChildren.push(this.parseComponentChild());
+      if (args.length > 0) {
+        throw new Error(`Slot cannot have arguments at (${currentToken.line}, ${currentToken.index})`);
       }
-      this.expect(TokenType.Rbrace);
+      if (slotAttr) {
+        throw new Error(`Slot cannot have a class at (${currentToken.line}, ${currentToken.index})`);
+      }
+      if (styleAttr) {
+        throw new Error(`Slot cannot have a style at (${currentToken.line}, ${currentToken.index})`);
+      }
+      if (classAttr) {
+        throw new Error(`Slot cannot have a class at (${currentToken.line}, ${currentToken.index})`);
+      }
+    }
+    else if (type === 'block') {
+      if (!children.length) {
+        throw new Error(`Block must have children at (${currentToken.line}, ${currentToken.index})`);
+      }
+      if (args.length > 0) {
+        throw new Error(`Block cannot have arguments at (${currentToken.line}, ${currentToken.index})`);
+      }
+      if (nameAttr) {
+        throw new Error(`Block cannot have a name at (${currentToken.line}, ${currentToken.index})`);
+      }
+    } else if (type === 'componentRef') {
+      if (!Array.isArray(children)) {
+        throw new Error(`Component cannot have string children at (${currentToken.line}, ${currentToken.index})`);
+      }
+      if (nameAttr) {
+        throw new Error(`Component cannot have a name at (${currentToken.line}, ${currentToken.index})`);
+      }
     }
 
     return {
-      type: 'componentRef',
-      name: name.value!,
-      slot,
+      type,
+      name: type === 'slotRef' ? nameAttr : name,
       args,
-      slotChildren
+      children,
+      slot: slotAttr,
+      class: classAttr,
+      style: styleAttr
     }
   }
 

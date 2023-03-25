@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_HIGH, KW_BLOCK, KW_STYLE } from "./Constants";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_STYLE, KW_NAME } from "./Constants";
 
 export enum TokenType {
   Identifier = 'Identifier',
@@ -32,10 +32,9 @@ export class StyloLexer {
     KW_COMPONENT,
     KW_CLASS,
     KW_STYLE,
+    KW_NAME,
     KW_APPLY,
-    KW_SLOT_LOW,
-    KW_SLOT_HIGH,
-    KW_BLOCK
+    KW_SLOT_LOW
   ];
 
   private static readonly WHITESPACE = /\s/;
@@ -145,14 +144,18 @@ export class StyloLexer {
       this.pos < this.input.length &&
       contentRegex.test(this.input[this.pos])
     ) {
-      word += this.input[this.pos++];
+      if (this.input[this.pos] === '/' && (this.input[this.pos + 1] === '/' || this.input[this.pos + 1] === '*')) {
+        this.skipComments();
+      } else {
+        word += this.input[this.pos++];
+      }
     }
   
     const tokenType = possibleKeyword && StyloLexer.KEYWORDS.includes(word)
       ? TokenType.Keyword
       : type;
     this.tokens.push(new Token(tokenType, word, startPosition.line, startPosition.index));
-  }
+  }  
   
   private tokenizeString(quote: string): void {
     let str = '';

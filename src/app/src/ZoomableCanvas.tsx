@@ -23,8 +23,6 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
     zoomPoint.x = e.pageX - offset.left;
     zoomPoint.y = e.pageY - offset.top;
 
-    e.preventDefault();
-
     // Cap the delta to [-1,1] for cross-browser consistency
     const delta = Math.max(-1, Math.min(1, -e.deltaY));
 
