@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import React, { FC, useState, useRef } from "react";
 import DOMPurify from "dompurify";
 import { RenderResult } from "./compiler/StyloRenderer";
 
@@ -6,74 +6,93 @@ type ZoomableCanvasProps = {
   render: RenderResult;
 };
 
-const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render: source }) => {
-  const [zoom, setZoom] = useState(1);
-  const [canvasPosition, setCanvasPosition] = useState({ x: 0, y: 0 });
+const factor = 0.1;
+const max_scale = 10;
+let zoomTarget = { x: 0, y: 0 };
+let zoomPoint = { x: 0, y: 0 };
 
-  function handleZoom(event: any) {  
-    const container = event.currentTarget;
-    const canvas = container.firstChild;
-  
-    const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-  
-    setZoom((prevZoom) => {
-      const newZoom = Math.min(Math.max(0.1, prevZoom * zoomFactor), 3);
-      const scaleFactor = newZoom / prevZoom;
-  
-      const containerRect = container.getBoundingClientRect();
-      const cursorX = event.clientX - containerRect.left;
-      const cursorY = event.clientY - containerRect.top;
-  
-      const canvasRect = canvas.getBoundingClientRect();
-      const relX = (cursorX - canvasRect.left) / canvasRect.width;
-      const relY = (cursorY - canvasRect.top) / canvasRect.height;
-  
-      const offsetX = canvasRect.width * (scaleFactor - 1) * relX;
-      const offsetY = canvasRect.height * (scaleFactor - 1) * relY;
-  
-      setCanvasPosition((prevCanvasPosition) => ({
-        x: prevCanvasPosition.x - offsetX,
-        y: prevCanvasPosition.y - offsetY,
-      }));
-  
-      return newZoom;
-    });
-  }  
+const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
+  const [scale, setScale] = useState(1);
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLDivElement>(null);
 
-  function handlePanStart(event: any) {
+  function handleZoom(e: React.WheelEvent<HTMLDivElement>) {
+    const container = e.currentTarget;
+    const target = canvasRef.current!;
+    const size = {
+      w: target.getBoundingClientRect().width,
+      h: target.getBoundingClientRect().height,
+    };
+
+    const offset = container.getBoundingClientRect();
+    zoomPoint.x = e.pageX - offset.left;
+    zoomPoint.y = e.pageY - offset.top;
+
+    e.preventDefault();
+
+    // cap the delta to [-1,1] for cross browser consistency
+    const delta = Math.max(-1, Math.min(1, -e.deltaY));
+
+    // determine the point on where the slide is zoomed in
+    zoomTarget.x = (zoomPoint.x - pos.x) / scale;
+    zoomTarget.y = (zoomPoint.y - pos.y) / scale;
+
+    // apply zoom
+    const newScale = scale + delta * factor * scale;
+    setScale(Math.max(1, Math.min(max_scale, newScale)));
+
+    // calculate x and y based on zoom
+    const newPos = {
+      x: -zoomTarget.x * newScale + zoomPoint.x,
+      y: -zoomTarget.y * newScale + zoomPoint.y,
+    };
+
+    // Make sure the slide stays in its container area when zooming out
+    if (newPos.x > 0) newPos.x = 0;
+    if (newPos.x + size.w * newScale < size.w)
+      newPos.x = -size.w * (newScale - 1);
+    if (newPos.y > 0) newPos.y = 0;
+    if (newPos.y + size.h * newScale < size.h)
+      newPos.y = -size.h * (newScale - 1);
+
+    setPos(newPos);
+  }
+
+  function handlePanStart(event: React.MouseEvent<HTMLDivElement>) {
     const initialPosition = { x: event.clientX, y: event.clientY };
-  
-    function handlePanMove(event: any) {
-      const dx = (event.clientX - initialPosition.x) / zoom;
-      const dy = (event.clientY - initialPosition.y) / zoom;
-  
-      setCanvasPosition((prevCanvasPosition) => ({
+
+    function handlePanMove(event: MouseEvent) {
+      const dx = (event.clientX - initialPosition.x) / scale;
+      const dy = (event.clientY - initialPosition.y) / scale;
+
+      setPos((prevCanvasPosition) => ({
         x: prevCanvasPosition.x + dx,
         y: prevCanvasPosition.y + dy,
       }));
-  
+
       initialPosition.x = event.clientX;
       initialPosition.y = event.clientY;
     }
-  
+
     function handlePanEnd() {
       document.removeEventListener("mousemove", handlePanMove);
       document.removeEventListener("mouseup", handlePanEnd);
     }
-  
+
     document.addEventListener("mousemove", handlePanMove);
     document.addEventListener("mouseup", handlePanEnd);
   }
 
-  const components = source.components.join("\n")
+  const components = render.components.join("\n");
   const container = `<div style="display: flex; gap: 100px">
-    ${source.style}
+    ${render.style}
     ${components}
-  </div>`
+  </div>`;
   const sanitizedHtml = DOMPurify.sanitize(container);
 
   return (
     <div
+      id="canvasContainer"
       style={{
         position: "relative",
         overflow: "hidden",
@@ -84,8 +103,11 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render: source }) => {
       onMouseDown={handlePanStart}
     >
       <div
+        id="canvas"
+        ref={canvasRef}
         style={{
-          transform: `scale(${zoom}) translate(${canvasPosition.x}px, ${canvasPosition.y}px) translateZ(0)`,
+          transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
+          transformOrigin: "0 0",
           position: "absolute",
           left: 0,
           top: 0,

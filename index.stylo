@@ -39,3 +39,14 @@ component Footer {
     PrimaryButton("Continue")
   }
 }
+
+render component MyApp {
+  block(root) {
+    Header("Stylo")
+    Body {
+      block { "This is the body" }
+      block (slot="topRight") { "Top right" }
+    }
+    Footer
+  }
+}
