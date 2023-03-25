@@ -84,16 +84,10 @@ const registerCustomLanguage = () => {
 
       componentChildren: [
         [/{/, { token: 'delimiter.curly', bracket: '@open' }],
-        [/block/, { token: 'tag', next: '@element' }],
-        [/Slot/, { token: 'tag', next: '@slot' }],
+        [/Slot/, { token: 'type', next: '@element' }],
+        [/[a-z][\w]+/, { token: 'tag', next: '@element' }],
         [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
         [/}/, { token: '@rematch', bracket: '@close', next: '@popall' }],
-      ],
-
-      slot: [
-        [/\(/, { token: 'delimiter.parenthesis', bracket: '@open', next: '@elementParams' }],
-        [/\)/, { token: '@rematch', bracket: '@close', next: '@pop' }],
-        [/[a-zA-Z][\w]+/, { token: '@rematch', next: '@pop' }],
       ],
 
       element: [
@@ -105,8 +99,7 @@ const registerCustomLanguage = () => {
 
       elementParams: [     
         [/\(/, { token: 'delimiter.parenthesis', bracket: '@open' }],
-        [/style/, 'variable.name'],   
-        [/slot/, 'variable.name'],   
+        [/\bclass|style|slot|name\b/, 'variable.name'], 
         [/"/, 'string', '@string' ],
         [/'/, 'string', '@string' ],
         [/,/, ''],
@@ -118,9 +111,9 @@ const registerCustomLanguage = () => {
         [/{/, { token: 'delimiter.curly', bracket: '@open' }],
         [/"/, 'string', '@string' ],
         [/'/, 'string', '@string' ],
-        [/block/, { token: 'tag', next: '@element' }],
-        [/Slot/, { token: 'type', next: '@slot' }],
-        [/[a-zA-Z][\w]+/, { token: 'type', next: '@element' }],
+        [/Slot/, { token: 'type', next: '@element' }],
+        [/[a-z][\w]+/, { token: 'tag', next: '@element' }],
+        [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
         [/}/, { token: 'delimiter.curly', bracket: '@close', next: '@pop' }],
       ]
     },
