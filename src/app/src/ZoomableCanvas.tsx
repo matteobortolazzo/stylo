@@ -7,7 +7,8 @@ type ZoomableCanvasProps = {
 };
 
 const factor = 0.1;
-const max_scale = 10;
+const minScale = 0.2;
+const maxScale = 6;
 let zoomTarget = { x: 0, y: 0 };
 let zoomPoint = { x: 0, y: 0 };
 
@@ -30,7 +31,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
 
     e.preventDefault();
 
-    // cap the delta to [-1,1] for cross browser consistency
+    // cap the delta to [-1,1] for cross-browser consistency
     const delta = Math.max(-1, Math.min(1, -e.deltaY));
 
     // determine the point on where the slide is zoomed in
@@ -39,7 +40,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
 
     // apply zoom
     const newScale = scale + delta * factor * scale;
-    setScale(Math.max(1, Math.min(max_scale, newScale)));
+    setScale(Math.max(minScale, Math.min(maxScale, newScale)));
 
     // calculate x and y based on zoom
     const newPos = {
