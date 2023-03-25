@@ -27,7 +27,7 @@ component Header(text) {
 component Body {
   block(p-10)  {
     Slot
-    block(fixed top-22 right-8 p-4 rounded border-4 border-grey) {
+    block(absolute top-22 right-8 p-4 rounded border-4 border-grey) {
       Slot(topRight)
     }
   }

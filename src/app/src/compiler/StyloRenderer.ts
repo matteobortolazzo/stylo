@@ -84,7 +84,7 @@ export class StyloRenderer {
   
   private renderComponent(component: ComponentDefinitionNode): string {
     const content = this.renderComponentChildren(component.children, TAB)
-    return `<div data-comp="${component.name}">${content}\n${TAB}</div>`;
+    return `<div style="position: relative" data-comp="${component.name}">${content}\n${TAB}</div>`;
   }
 
   private renderComponentChildren(

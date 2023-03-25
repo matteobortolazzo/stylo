@@ -1,6 +1,7 @@
 import { FC, useEffect } from "react";
 import MonacoEditor from "react-monaco-editor";
 import * as monaco from "monaco-editor";
+import { debounce } from "lodash";
 
 const registerCustomLanguage = () => {
   monaco.languages.register({ id: "stylo" });
@@ -130,22 +131,28 @@ type CodeEditorProps = {
   onChange: (newValue: string) => void;
 };
 
+const debounceMs = 300;
+const initialValue = `// App button
+render component Button {
+    block(px-8 py-4 border-2 border-grey rounded) { "Click!" }
+}`;
+
 const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
   useEffect(() => {
     registerCustomLanguage();
   }, []);
 
-  const handleEditorChange = (newValue: string, e: any) => {
+  const handleEditorChange = debounce((newValue: string, _: any) => {
     onChange(newValue);
-  };
+  }, debounceMs);
 
   return (
     <MonacoEditor
       width="800"
-      height="100vh"
+      height="100%"
       language="stylo"
       theme="vs-dark"
-      value="// Your code here"
+      value={initialValue}
       onChange={handleEditorChange}
     />
   );

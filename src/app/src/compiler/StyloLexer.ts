@@ -61,6 +61,11 @@ export class StyloLexer {
         }
         continue;
       }
+
+      if (currentChar === '/' && (this.input[this.pos + 1] === '/' || this.input[this.pos + 1] === '*')) {
+        this.skipComments();
+        continue;
+      }
   
       if (StyloLexer.WORD_START.test(currentChar)) {
         this.tokenizeWord(StyloLexer.WORD, TokenType.Identifier, true);
@@ -114,6 +119,23 @@ export class StyloLexer {
 
     return this.tokens;
   }
+
+  private skipComments(): void {
+    if (this.input[this.pos + 1] === '/') {
+      // Single-line comment
+      this.pos += 2;
+      while (this.pos < this.input.length && !StyloLexer.NEWLINE.test(this.input[this.pos])) {
+        this.pos++;
+      }
+    } else if (this.input[this.pos + 1] === '*') {
+      // Multi-line comment
+      this.pos += 2;
+      while (this.pos < this.input.length - 1 && !(this.input[this.pos] === '*' && this.input[this.pos + 1] === '/')) {
+        this.pos++;
+      }
+      this.pos += 2;
+    }
+  }  
 
   private tokenizeWord(contentRegex: RegExp, type: TokenType, possibleKeyword: boolean): void {
     let word = '';
