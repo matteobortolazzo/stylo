@@ -47,25 +47,24 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
 
   function handlePanStart(event: React.MouseEvent<HTMLDivElement>) {
     const initialPosition = { x: event.clientX, y: event.clientY };
-
+  
     function handlePanMove(event: MouseEvent) {
-      const dx = (event.clientX - initialPosition.x) / scale;
-      const dy = (event.clientY - initialPosition.y) / scale;
-
+      const dx = event.clientX - initialPosition.x;
+      const dy = event.clientY - initialPosition.y;
       setPos((prevCanvasPosition) => ({
         x: prevCanvasPosition.x + dx,
         y: prevCanvasPosition.y + dy,
       }));
-
+  
       initialPosition.x = event.clientX;
       initialPosition.y = event.clientY;
     }
-
+  
     function handlePanEnd() {
       document.removeEventListener("mousemove", handlePanMove);
       document.removeEventListener("mouseup", handlePanEnd);
     }
-
+  
     document.addEventListener("mousemove", handlePanMove);
     document.addEventListener("mouseup", handlePanEnd);
   }
