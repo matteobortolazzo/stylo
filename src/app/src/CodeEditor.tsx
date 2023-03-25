@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useState } from "react";
 import MonacoEditor from "react-monaco-editor";
 import * as monaco from "monaco-editor";
 import { debounce } from "lodash";
@@ -138,8 +138,20 @@ render component Button {
 }`;
 
 const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
+  const [editorHeight, setEditorHeight] = useState(window.innerHeight);
+
   useEffect(() => {
     registerCustomLanguage();
+
+    const handleResize = () => {
+      setEditorHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const handleEditorChange = debounce((newValue: string, _: any) => {
@@ -148,8 +160,8 @@ const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
 
   return (
     <MonacoEditor
-      width="800"
-      height="100%"
+      width="100%"
+      height={`${editorHeight}px`}
       language="stylo"
       theme="vs-dark"
       value={initialValue}
