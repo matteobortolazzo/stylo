@@ -1,5 +1,5 @@
 import { TAB } from "./Constants";
-import { ParamNode, ComponentDefinitionNode, ComponentChildNode } from "./StyloParser";
+import { ParamNode, ComponentDefinitionNode, ComponentChildNode, RenderNode } from "./StyloParser";
 import { ClassNode } from "./StyloParser";
 import { Node } from "./StyloParser";
 
@@ -30,15 +30,15 @@ export class StyloRenderer {
       this.components.set(component.name, component);
     }
 
-    const components: string[] = [];
-    for (const componentDefinition of componentDefinitionNodes.filter((c) => c.display)) {
-      const component = this.renderComponent(componentDefinition);
-      components.push(component);
+    const renders: string[] = [];
+    for (const render of this.ast.filter(n => n.type === "render")) {
+      const component = this.renderComponent(render as RenderNode);
+      renders.push(component);
     }
 
     return {
       style,
-      components
+      components: renders
     }
   }
 
@@ -78,9 +78,9 @@ export class StyloRenderer {
     }`;
   }
   
-  private renderComponent(component: ComponentDefinitionNode): string {
-    const content = this.renderComponentChildren(component.children, TAB)
-    return `<div style="position: relative" data-comp="${component.name}">${content}\n${TAB}</div>`;
+  private renderComponent(component: RenderNode): string {
+    const content = this.renderComponentChild(component.child, TAB)
+    return `<div style="position: relative" data-comp="${component.child.name}">${content}\n${TAB}</div>`;
   }
 
   private renderComponentChildren(

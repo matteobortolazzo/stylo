@@ -1,0 +1,12 @@
+class styloPage {
+  width: 800px;
+  height: 600px;
+  position: relative;
+  border: 1px solid black;
+}
+
+component Page() {
+  block(class="styloPage") {
+    Slot
+  }
+}

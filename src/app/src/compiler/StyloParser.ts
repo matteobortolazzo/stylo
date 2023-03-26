@@ -38,9 +38,13 @@ export type ApplyNode = {
 };
 
 // Component
+export type RenderNode = {
+  type: 'render';
+  child: ComponentChildNode;
+};
+
 export type ComponentDefinitionNode = {
   type: 'componentDef';
-  display: boolean;
   name: string;
   args: string[];
   children: ComponentChildNode[];
@@ -63,7 +67,7 @@ export type ComponentRefArgNode = {
 }
 
 // Root
-export type Node = ParamNode | ClassNode | ComponentDefinitionNode;
+export type Node = ParamNode | ClassNode | ComponentDefinitionNode | RenderNode;
 
 //#endregion
 
@@ -87,11 +91,10 @@ export class StyloParser {
         nodes.push(this.parseParamDefinition());
       } else if (token.value === KW_CLASS) {
         nodes.push(this.parseClassDefinition());
-      } else if (token.value === KW_RENDER) {
-        this.expect(TokenType.Keyword, KW_RENDER);
-        nodes.push(this.parseComponentDefinition(true));
       } else if (token.value === KW_COMPONENT) {
-        nodes.push(this.parseComponentDefinition(false));
+        nodes.push(this.parseComponentDefinition());
+      } else if (token.value === KW_RENDER) {
+        nodes.push(this.parseRender());
       } else {
         throw new Error(`Unexpected token '${token.type}' at (${token.line}, ${token.index})`);
       }
@@ -99,6 +102,19 @@ export class StyloParser {
 
     return nodes;
   }
+
+  //#region Render
+
+  private parseRender(): RenderNode {
+    this.expect(TokenType.Keyword, KW_RENDER);
+    const child = this.parseComponentChild();
+    return {
+      type: 'render',
+      child
+    }
+  }
+
+  //#endregion
 
   //#region Param
 
@@ -201,7 +217,7 @@ export class StyloParser {
 
   //#region Component
 
-  private parseComponentDefinition(display: boolean): ComponentDefinitionNode {
+  private parseComponentDefinition(): ComponentDefinitionNode {
     this.expect(TokenType.Keyword, 'component');
     const name = this.parseTokenValue(TokenType.Identifier);
 
@@ -214,7 +230,6 @@ export class StyloParser {
 
     return {
       type: 'componentDef',
-      display,
       name,
       args,
       children
@@ -255,6 +270,15 @@ export class StyloParser {
       ? this.componentStart.test(name![0]) ? 'componentRef' : 'block'
       : 'slotRef'
 
+    if (this.eof()) {
+      return {
+        type,
+        name,
+        args: [],
+        children: []
+      }
+    }
+
     const args: ComponentRefArgNode[] = [];
     let keyValuePairs: { [key: string]: string } = {};
 
@@ -275,6 +299,23 @@ export class StyloParser {
       this.expect(TokenType.Rparen);
     }
 
+    const slotAttr = keyValuePairs[KW_SLOT_LOW];
+    const classAttr = keyValuePairs[KW_CLASS];
+    const styleAttr = keyValuePairs[KW_STYLE];
+    const nameAttr = keyValuePairs[KW_NAME];
+
+    if (this.eof()) {
+      return {
+        type,
+        name,
+        args,
+        children: [],
+        slot: slotAttr,
+        class: classAttr,
+        style: styleAttr
+      }
+    }
+
     // Parse content
     let children: ComponentChildNode[] | string = [];
     if (this.peekHasType(TokenType.Lbrace)) {
@@ -289,11 +330,6 @@ export class StyloParser {
       }
       this.expect(TokenType.Rbrace);
     }
-
-    const slotAttr = keyValuePairs[KW_SLOT_LOW];
-    const classAttr = keyValuePairs[KW_CLASS];
-    const styleAttr = keyValuePairs[KW_STYLE];
-    const nameAttr = keyValuePairs[KW_NAME];
 
     if (type === 'slotRef') {
       if (children.length > 0) {
@@ -406,6 +442,10 @@ export class StyloParser {
 
   private peek(): Token {
     return this.tokens[this.pos];
+  }
+
+  private eof(): boolean {
+    return this.pos >= this.tokens.length;
   }
 
   //#endregion

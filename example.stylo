@@ -3,11 +3,9 @@ param foregroundColor = "#333333"
 param primaryColor = '#FFC0CB'
 
 class root {
-  height: 600px;
-  width: 800px;
+  height: 100%;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  border: 1px solid black;
 }
 
 component PrimaryButton(text) {
@@ -40,7 +38,20 @@ component Footer {
   }
 }
 
-render component MyApp {
+class styloPage {
+  width: 800px;
+  height: 600px;
+  position: relative;
+  border: 1px solid black;
+}
+
+component Page {
+  block(class="styloPage") {
+    Slot
+  }
+}
+
+render Page {
   block(class="root") {
     Header("Stylo", class="header-test")
     Body {

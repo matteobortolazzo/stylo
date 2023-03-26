@@ -24,6 +24,7 @@ export class StyloCompiler {
       return render;
     }
     catch (e) {
+      this.stopwatch.stop();
       console.log(`%c${e}`, "color: red");
       console.log();
       return undefined;
