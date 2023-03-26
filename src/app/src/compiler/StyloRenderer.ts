@@ -19,7 +19,7 @@ export class StyloRenderer {
 
   constructor(private ast: Node[]) { }
 
-  render(): RenderResult {  
+  render(): RenderResult {
     const style = this.renderStyleBlock();
 
     const componentDefinitionNodes = this.ast
@@ -44,13 +44,13 @@ export class StyloRenderer {
 
   private renderStyleBlock(): string {
     const cssVariables = this.ast
-    .filter((n) => n.type === "param")
-    .map(n => this.renderParameters(n as ParamNode))
-    .join("\n");
-  const customClasses = this.ast
-    .filter((n) => n.type === "class")
-    .map(n => this.renderCustomClass(n as ClassNode))
-    .join("\n");
+      .filter((n) => n.type === "param")
+      .map(n => this.renderParameters(n as ParamNode))
+      .join("\n");
+    const customClasses = this.ast
+      .filter((n) => n.type === "class")
+      .map(n => this.renderCustomClass(n as ClassNode))
+      .join("\n");
 
     const styleContent = cssVariables ? `:root {\n${cssVariables}\n${TAB}${TAB}}` : "";
     return `<style>\n${TAB}${TAB}${styleContent}\n${TAB}${customClasses}\n${TAB}</style>`;
@@ -77,10 +77,10 @@ export class StyloRenderer {
       ${cssProperties.join("\n      ")}
     }`;
   }
-  
+
   private renderComponent(component: RenderNode): string {
     const content = this.renderComponentChild(component.child, TAB)
-    return `<div style="position: relative" data-comp="${component.child.name}">${content}\n${TAB}</div>`;
+    return `<div style="position: relative">${content}\n${TAB}</div>`;
   }
 
   private renderComponentChildren(
@@ -139,31 +139,6 @@ export class StyloRenderer {
     indent: string,
     parentArgs?: ComponentArgument[],
     parentSlots?: ComponentChildNode[]): string {
-
-    function replaceWithArgs(input: string): string {
-      if (parentArgs) {
-        for (const argNode of parentArgs) {
-          input = input.replace(`{${argNode.name}}`, argNode.value);
-        }
-      }
-      return input;
-    }
-
-    const finalStyle = block.style ? replaceWithArgs(block.style)
-      .split(';')
-      .filter(s => s.trim().length > 0)
-      .map(style => {
-        const values = style.split(':');
-        if (values[1].trim().startsWith('$')) {
-          values[1] = `var(--${values[1].trim().substring(1)})`;
-        }
-        return values.join(':');
-      })
-      .join(';')
-      : '';
-    const styleAttr = block.style ? ` style="${finalStyle}"` : "";
-    const classAttr = block.class ? ` class="${block.class}"` : "";
-
     let tag = '';
     let content = '';
     // Render child nodes
@@ -175,9 +150,10 @@ export class StyloRenderer {
     // Replace string templates
     else {
       tag = 'span';
-      content = replaceWithArgs(block.children as string);
+      content = this.replaceWithArgs(block.children as string, parentArgs);
     }
-    return `\n${TAB}${indent}<${tag}${classAttr}${styleAttr}>${content}</${tag}>`;
+    const attributes = this.getStyleAttributes(block.style, block.class, parentArgs);
+    return `\n${TAB}${indent}<${tag} data-stylo-block="${block.name}"${attributes.class}${attributes.style}>${content}</${tag}>`;
   }
 
   private renderComponentRef(
@@ -189,9 +165,39 @@ export class StyloRenderer {
       throw new Error(`Component ${componentRef.name} is not defined`)
     }
 
+    const attributes = this.getStyleAttributes(componentRef.style, componentRef.class, parentArgs);
     const componentArguments = this.getComponentArguments(componentRef, componentDef, parentArgs);
     const componentChildrenToRender = this.getComponentChildNodesWithSlots(componentRef, componentDef);
-    return this.renderComponentChildren(componentChildrenToRender, indent, componentArguments, componentRef.children as ComponentChildNode[]);
+    const childrenRender = this.renderComponentChildren(componentChildrenToRender, indent, componentArguments, componentRef.children as ComponentChildNode[]);
+    return `<div data-stylo-component="${componentRef.name}"${attributes.class}${attributes.style}>\n${indent}${TAB}${childrenRender}\n${indent}</div>`;
+  }
+
+  private getStyleAttributes(styleValue?: string, classValue?: string, parentArgs?: ComponentArgument[]): { style: string, class: string } {
+    const finalStyle = styleValue ? this.replaceWithArgs(styleValue, parentArgs)
+      .split(';')
+      .filter(s => s.trim().length > 0)
+      .map(s => {
+        const values = s.split(':');
+        if (values[1].trim().startsWith('$')) {
+          values[1] = `var(--${values[1].trim().substring(1)})`;
+        }
+        return values.join(':');
+      })
+      .join(';') 
+      : '';
+    return {
+      style: styleValue ? ` style="${finalStyle}"` : "",
+      class: classValue ? ` class="${classValue}"` : ""
+    };
+  }
+
+  private replaceWithArgs(input: string, parentArgs?: ComponentArgument[]): string {
+    if (parentArgs) {
+      for (const argNode of parentArgs) {
+        input = input.replace(`{${argNode.name}}`, argNode.value);
+      }
+    }
+    return input;
   }
 
   private getComponentArguments(
@@ -222,11 +228,11 @@ export class StyloRenderer {
       // Value from parent
       const parantArg = parentArgs?.find((a) => a.name === argNode.value);
       const globaParam = this.parameters?.get(argNode.value);
-      if (parantArg) {        
+      if (parantArg) {
         currentNodeArgs.push({ name, value: parantArg.value })
       } else if (globaParam) {
         currentNodeArgs.push({ name, value: globaParam })
-      } else {        
+      } else {
         throw new Error(`Argument ${argNode.value} is not defined`)
       }
     }

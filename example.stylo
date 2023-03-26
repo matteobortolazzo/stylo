@@ -15,7 +15,7 @@ component PrimaryButton(text) {
 }
 
 component SecondaryButton(text) {
-  button(class="w-24 px-4 border-2 rounded", style='border-color: $primaryColor') { "{text}" }
+  button(class="w-24 px-4 border-2 rounded bg-white", style='border-color: $primaryColor') { "{text}" }
 }
 
 component Header(text) {
