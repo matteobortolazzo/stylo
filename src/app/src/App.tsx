@@ -16,7 +16,8 @@ const compiler = new StyloCompiler();
 const App = () => {
   const [render, setRender] = React.useState<RenderResult>({
     style: "",
-    components: [],
+    renders: [],
+    components: {}
   });
 
   const handleCodeChange = async (newValue: string) => {

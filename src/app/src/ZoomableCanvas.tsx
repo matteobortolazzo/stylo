@@ -98,7 +98,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
     }
   }
 
-  const components = render.components.join("\n");
+  const components = render.renders.join("\n");
   const container = `<div style="display: flex; gap: 100px; padding: 50px">
     ${render.style}
     ${components}

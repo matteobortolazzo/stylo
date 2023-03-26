@@ -1,6 +1,5 @@
 import { TAB } from "./Constants";
-import { ParamNode, ComponentDefinitionNode, ComponentChildNode, RenderNode } from "./StyloParser";
-import { ClassNode } from "./StyloParser";
+import { ImportNode, ParamNode, ClassNode, ComponentDefinitionNode, ComponentChildNode, RenderNode } from "./StyloParser";
 import { Node } from "./StyloParser";
 
 type ComponentArgument = {
@@ -10,7 +9,8 @@ type ComponentArgument = {
 
 export type RenderResult = {
   style: string;
-  components: string[];
+  renders: string[];
+  components: Record<string, { index: number, line: number }>;
 }
 
 export class StyloRenderer {
@@ -20,38 +20,47 @@ export class StyloRenderer {
 
   render(ast: Node[]): RenderResult {
     this.ast = ast;
-    const style = this.renderStyleBlock();
 
-    const componentDefinitionNodes = this.ast
-      .filter((n) => n.type === "componentDef")
-      .map((n) => n as ComponentDefinitionNode)
+    const importNodes: ImportNode[] = [];
+    const paramNodes: ParamNode[] = [];
+    const classNodes: ClassNode[] = [];
+    const componentDefNodes: ComponentDefinitionNode[] = [];
+    const renderNodes: RenderNode[] = [];
 
-    for (const component of componentDefinitionNodes) {
+    for (const node of this.ast) {
+      if (node.type === 'import')
+        importNodes.push(node as ImportNode);
+      else if (node.type === 'param')
+        paramNodes.push(node as ParamNode);
+      else if (node.type === 'class')
+        classNodes.push(node as ClassNode);
+      else if (node.type === 'componentDef')
+        componentDefNodes.push(node as ComponentDefinitionNode);
+      else if (node.type === 'render')
+        renderNodes.push(node as RenderNode);
+    }
+
+    const style = this.renderStyleBlock(paramNodes, classNodes);
+
+    for (const component of componentDefNodes) {
       this.components.set(component.name, component);
     }
 
-    const renders: string[] = [];
-    for (const render of this.ast.filter(n => n.type === "render")) {
-      const component = this.renderComponent(render as RenderNode);
-      renders.push(component);
-    }
-
     this.ast = [];
+    const components: Record<string, { index: number, line: number }> = componentDefNodes.reduce((acc, curr) => {
+      (acc as any)[curr.name] = { index: curr.index, line: curr.index }
+      return acc;
+    }, {});
     return {
       style,
-      components: renders
+      renders: renderNodes.map(n => this.renderComponent(n)),
+      components
     }
   }
 
-  private renderStyleBlock(): string {
-    const cssVariables = this.ast
-      .filter((n) => n.type === "param")
-      .map(n => this.renderParameters(n as ParamNode))
-      .join("\n");
-    const customClasses = this.ast
-      .filter((n) => n.type === "class")
-      .map(n => this.renderCustomClass(n as ClassNode))
-      .join("\n");
+  private renderStyleBlock(paramNodes: ParamNode[], classNodes: ClassNode[]): string {
+    const cssVariables = paramNodes.map(n => this.renderParameters(n)).join("\n");
+    const customClasses = classNodes.map(n => this.renderCustomClass(n)).join("\n");
 
     const styleContent = cssVariables ? `:root {\n${cssVariables}\n${TAB}${TAB}}` : "";
     return `<style>\n${TAB}${TAB}${styleContent}\n${TAB}${customClasses}\n${TAB}</style>`;
@@ -184,7 +193,7 @@ export class StyloRenderer {
         }
         return values.join(':');
       })
-      .join(';') 
+      .join(';')
       : '';
     return {
       style: styleValue ? ` style="${finalStyle}"` : "",
