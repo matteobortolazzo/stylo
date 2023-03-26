@@ -6,18 +6,24 @@ import { Token, TokenType } from './StyloLexer';
 // Import
 export type ImportNode = {
   type: 'import';
+  index: number;
+  line: number;
   path: string;
 };
 
 // Render
 export type RenderNode = {
   type: 'render';
+  index: number;
+  line: number;
   child: ComponentChildNode;
 };
 
 // Param
 export type ParamNode = {
   type: 'param';
+  index: number;
+  line: number;
   name: string;
   value: string;
 };
@@ -25,6 +31,8 @@ export type ParamNode = {
 // Classe
 export type ClassNode = {
   type: 'class';
+  index: number;
+  line: number;
   name: string;
   properties: ClassChildNode[];
 };
@@ -53,6 +61,8 @@ export type ApplyNode = {
 
 export type ComponentDefinitionNode = {
   type: 'componentDef';
+  index: number;
+  line: number;
   name: string;
   args: string[];
   children: ComponentChildNode[];
@@ -60,6 +70,8 @@ export type ComponentDefinitionNode = {
 
 export type ComponentChildNode = {
   type: 'block' | 'componentRef' | 'slotRef';
+  index: number;
+  line: number;
   name?: string;
   class?: string;
   style?: string;
@@ -79,13 +91,15 @@ export type Node = ImportNode | RenderNode | ParamNode | ClassNode | ComponentDe
 
 //#endregion
 
-export class StyloParser {
+export class StyloParser {  
   private pos = 0;
+  private tokens: Token[] = [];
+  
   private componentStart = /[A-Z]/;
 
-  constructor(private tokens: Token[]) { }
-
-  parse(): Node[] {
+  parse(tokens: Token[]): Node[] {
+    this.pos = 0;
+    this.tokens = tokens;
     const nodes: Node[] = [];
     
     while (this.pos < this.tokens.length) {
@@ -96,6 +110,7 @@ export class StyloParser {
       nodes.push(this.getNextNode(token));
     }
 
+    this.tokens = [];
     return nodes;
   }
 
@@ -118,10 +133,13 @@ export class StyloParser {
   //#region Import
 
   private parseImport(): ImportNode {
+    const token = this.peek();
     this.expect(TokenType.Keyword, KW_IMPORT);
     const path = this.parseTokenValue(TokenType.String);
     return {
       type: 'import',
+      index: token.index,
+      line: token.line,
       path
     };
   }
@@ -131,10 +149,13 @@ export class StyloParser {
   //#region Render
 
   private parseRender(): RenderNode {
+    const token = this.peek();
     this.expect(TokenType.Keyword, KW_RENDER);
     const child = this.parseComponentChild();
     return {
       type: 'render',
+      index: token.index,
+      line: token.line,
       child
     }
   }
@@ -144,6 +165,7 @@ export class StyloParser {
   //#region Param
 
   private parseParamDefinition(): ParamNode {
+    const token = this.peek();
     this.expect(TokenType.Keyword, 'param');
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Equal);
@@ -151,6 +173,8 @@ export class StyloParser {
 
     return {
       type: 'param',
+      index: token.index,
+      line: token.line,
       name,
       value,
     };
@@ -161,6 +185,7 @@ export class StyloParser {
   //#region Class
 
   private parseClassDefinition(): ClassNode {
+    const token = this.peek();
     this.expect(TokenType.Keyword, 'class');
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Lbrace);
@@ -174,6 +199,8 @@ export class StyloParser {
 
     return {
       type: 'class',
+      index: token.index,
+      line: token.line,
       name,
       properties,
     };
@@ -243,6 +270,7 @@ export class StyloParser {
   //#region Component
 
   private parseComponentDefinition(): ComponentDefinitionNode {
+    const token = this.peek();
     this.expect(TokenType.Keyword, 'component');
     const name = this.parseTokenValue(TokenType.Identifier);
 
@@ -255,6 +283,8 @@ export class StyloParser {
 
     return {
       type: 'componentDef',
+      index: token.index,
+      line: token.line,
       name,
       args,
       children
@@ -288,8 +318,8 @@ export class StyloParser {
   }
 
   private parseComponentChild(): ComponentChildNode {
-    const currentToken = this.expect(TokenType.Identifier);
-    const name = currentToken.value!
+    const token = this.expect(TokenType.Identifier);
+    const name = token.value!
 
     const type = name !== KW_SLOT_HIGH
       ? this.componentStart.test(name![0]) ? 'componentRef' : 'block'
@@ -298,6 +328,8 @@ export class StyloParser {
     if (this.eof()) {
       return {
         type,
+        index: token.index,
+        line: token.line,
         name,
         args: [],
         children: []
@@ -332,6 +364,8 @@ export class StyloParser {
     if (this.eof()) {
       return {
         type,
+        index: token.index,
+        line: token.line,
         name,
         args,
         children: [],
@@ -358,42 +392,44 @@ export class StyloParser {
 
     if (type === 'slotRef') {
       if (children.length > 0) {
-        throw new Error(`Slot cannot have children at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Slot cannot have children at (${token.line}, ${token.index})`);
       }
       if (args.length > 0) {
-        throw new Error(`Slot cannot have arguments at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Slot cannot have arguments at (${token.line}, ${token.index})`);
       }
       if (slotAttr) {
-        throw new Error(`Slot cannot have a class at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Slot cannot have a class at (${token.line}, ${token.index})`);
       }
       if (styleAttr) {
-        throw new Error(`Slot cannot have a style at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Slot cannot have a style at (${token.line}, ${token.index})`);
       }
       if (classAttr) {
-        throw new Error(`Slot cannot have a class at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Slot cannot have a class at (${token.line}, ${token.index})`);
       }
     }
     else if (type === 'block') {
       if (!children.length) {
-        throw new Error(`Block must have children at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Block must have children at (${token.line}, ${token.index})`);
       }
       if (args.length > 0) {
-        throw new Error(`Block cannot have arguments at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Block cannot have arguments at (${token.line}, ${token.index})`);
       }
       if (nameAttr) {
-        throw new Error(`Block cannot have a name at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Block cannot have a name at (${token.line}, ${token.index})`);
       }
     } else if (type === 'componentRef') {
       if (!Array.isArray(children)) {
-        throw new Error(`Component cannot have string children at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Component cannot have string children at (${token.line}, ${token.index})`);
       }
       if (nameAttr) {
-        throw new Error(`Component cannot have a name at (${currentToken.line}, ${currentToken.index})`);
+        throw new Error(`Component cannot have a name at (${token.line}, ${token.index})`);
       }
     }
 
     return {
       type,
+      index: token.index,
+      line: token.line,
       name: type === 'slotRef' ? nameAttr : name,
       args,
       children,

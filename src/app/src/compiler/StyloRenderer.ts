@@ -16,10 +16,10 @@ export type RenderResult = {
 export class StyloRenderer {
   private parameters = new Map<string, string>();
   private components = new Map<string, ComponentDefinitionNode>();
+  private ast: Node[] = [];
 
-  constructor(private ast: Node[]) { }
-
-  render(): RenderResult {
+  render(ast: Node[]): RenderResult {
+    this.ast = ast;
     const style = this.renderStyleBlock();
 
     const componentDefinitionNodes = this.ast
@@ -36,6 +36,7 @@ export class StyloRenderer {
       renders.push(component);
     }
 
+    this.ast = [];
     return {
       style,
       components: renders

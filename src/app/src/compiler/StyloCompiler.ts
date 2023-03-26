@@ -6,15 +6,16 @@ import { RenderResult, StyloRenderer } from "./StyloRenderer";
 export class StyloCompiler {
   private stopwatch = new Stopwatch();
   private importAst: Record<string, Node[]> = {}
+  private lexer = new StyloLexer();
+  private parser = new StyloParser();
+  private renderer = new StyloRenderer();
 
   async compile(input: string): Promise<RenderResult | undefined> {
     try {
       console.log(`Compiling...`);
       this.stopwatch.start();
-      const lexer = new StyloLexer(input);
-      const tokens = lexer.tokenize();
-      const parser = new StyloParser(tokens);
-      const ast = parser.parse();
+      const tokens = this.lexer.tokenize(input);
+      const ast = this.parser.parse(tokens);
 
       // Imports
       const importNodes = ast
@@ -23,9 +24,7 @@ export class StyloCompiler {
         .map(n => n.path);
       const importAst = await this.getImportAst(importNodes);
 
-      const renderer = new StyloRenderer([...importAst, ...ast]);
-      const render = renderer.render();
-
+      const render = this.renderer.render([...importAst, ...ast]);
       const elapsedTime = this.stopwatch.stop();
       console.log(`%cCompiled in ${elapsedTime} ms`, "color: green");
       console.log();
@@ -51,10 +50,8 @@ export class StyloCompiler {
       } else {
         const response = await fetch(`${path}.stylo`);
         const content = await response.text();
-        const lexer = new StyloLexer(content);
-        const tokens = lexer.tokenize();
-        const parser = new StyloParser(tokens);
-        ast = parser.parse();
+        const tokens = this.lexer.tokenize(content);
+        ast = this.parser.parse(tokens);
         this.importAst[path] = ast;
       }
 

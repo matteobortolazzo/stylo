@@ -22,9 +22,8 @@ export class Token {
 
 export class StyloLexer {
   private pos = 0;
+  private input = '';
   private tokens: Token[] = [];
-
-  constructor(private input: string) {}
 
   private static readonly KEYWORDS = [
     KW_IMPORT,
@@ -45,7 +44,11 @@ export class StyloLexer {
   private static readonly WORD = /[-a-zA-Z0-9@_]/;
   private static readonly CSS_VALUE = /[-a-zA-Z0-9@_%]/;
 
-  tokenize(): Token[] {
+  tokenize(input: string): Token[] {
+    this.pos = 0;
+    this.input = input;
+    this.tokens = [];
+
     while (this.pos < this.input.length) {
       const currentChar = this.input[this.pos];
 
@@ -117,6 +120,7 @@ export class StyloLexer {
       this.pos++;
     }
 
+    this.input = '';
     return this.tokens;
   }
 
