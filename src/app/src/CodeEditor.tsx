@@ -17,7 +17,7 @@ const registerCustomLanguage = () => {
       root: [
         [/param/, { token: 'keyword', next: '@paramname' }],
         [/class/, { token: 'keyword', next: '@classname' }],
-        [/render component/, { token: 'keyword', next: '@componentname' }],
+        [/render/, { token: 'keyword', next: '@componentChildren' }],
         [/component/, { token: 'keyword', next: '@componentname' }],
         
         // whitespace
@@ -85,6 +85,7 @@ const registerCustomLanguage = () => {
       componentChildren: [
         [/{/, { token: 'delimiter.curly', bracket: '@open' }],
         [/Slot/, { token: 'type', next: '@element' }],
+        [/render/, { token: 'keyword' }],
         [/[a-z][\w]+/, { token: 'tag', next: '@element' }],
         [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
         [/}/, { token: '@rematch', bracket: '@close', next: '@popall' }],

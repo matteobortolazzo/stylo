@@ -45,7 +45,7 @@ class styloPage {
   border: 1px solid black;
 }
 
-component Page {
+component Page() {
   block(class="styloPage") {
     Slot
   }
@@ -61,3 +61,7 @@ render Page {
     Footer
   }
 }
+
+render Footer
+
+render PrimaryButton("Hello")
