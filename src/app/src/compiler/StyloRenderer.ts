@@ -19,7 +19,7 @@ export class StyloRenderer {
 
   constructor(private ast: Node[]) { }
 
-  render(): RenderResult {
+  render(): RenderResult {  
     const style = this.renderStyleBlock();
 
     const componentDefinitionNodes = this.ast

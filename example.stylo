@@ -1,3 +1,5 @@
+import "lib/Pages"
+
 param backgroundColor = '#F5F5F5'
 param foregroundColor = "#333333"
 param primaryColor = '#FFC0CB'
@@ -35,19 +37,6 @@ component Footer {
   block(class="p-4 flex justify-end gap-2 border-2") { 
     SecondaryButton("Cancel")
     PrimaryButton("Continue")
-  }
-}
-
-class styloPage {
-  width: 800px;
-  height: 600px;
-  position: relative;
-  border: 1px solid black;
-}
-
-component Page() {
-  block(class="styloPage") {
-    Slot
   }
 }
 

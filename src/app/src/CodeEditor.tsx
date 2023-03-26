@@ -15,6 +15,7 @@ const registerCustomLanguage = () => {
     // The main tokenizer for our languages
     tokenizer: {
       root: [
+        [/import/, { token: 'keyword' }],
         [/param/, { token: 'keyword', next: '@paramname' }],
         [/class/, { token: 'keyword', next: '@classname' }],
         [/render/, { token: 'keyword', next: '@componentChildren' }],

@@ -1,4 +1,4 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_STYLE, KW_NAME } from "./Constants";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_STYLE, KW_NAME, KW_IMPORT } from "./Constants";
 
 export enum TokenType {
   Identifier = 'Identifier',
@@ -27,6 +27,7 @@ export class StyloLexer {
   constructor(private input: string) {}
 
   private static readonly KEYWORDS = [
+    KW_IMPORT,
     KW_RENDER,
     KW_PARAM,
     KW_COMPONENT,

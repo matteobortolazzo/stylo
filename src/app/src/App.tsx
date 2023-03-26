@@ -19,9 +19,9 @@ const App = () => {
     components: [],
   });
 
-  const handleCodeChange = (newValue: string) => {
+  const handleCodeChange = async (newValue: string) => {
     try {
-      const renderResult = compiler.compile(newValue);
+      const renderResult = await compiler.compile(newValue);
       if (renderResult) {
         setRender(renderResult);
       }

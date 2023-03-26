@@ -1,7 +1,19 @@
-import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_HIGH, KW_STYLE, KW_NAME } from "./Constants";
+import { KW_APPLY, KW_CLASS, KW_COMPONENT, KW_RENDER, KW_PARAM, KW_SLOT_LOW, KW_SLOT_HIGH, KW_STYLE, KW_NAME, KW_IMPORT } from "./Constants";
 import { Token, TokenType } from './StyloLexer';
 
 //#region Nodes
+
+// Import
+export type ImportNode = {
+  type: 'import';
+  path: string;
+};
+
+// Render
+export type RenderNode = {
+  type: 'render';
+  child: ComponentChildNode;
+};
 
 // Param
 export type ParamNode = {
@@ -38,10 +50,6 @@ export type ApplyNode = {
 };
 
 // Component
-export type RenderNode = {
-  type: 'render';
-  child: ComponentChildNode;
-};
 
 export type ComponentDefinitionNode = {
   type: 'componentDef';
@@ -67,7 +75,7 @@ export type ComponentRefArgNode = {
 }
 
 // Root
-export type Node = ParamNode | ClassNode | ComponentDefinitionNode | RenderNode;
+export type Node = ImportNode | RenderNode | ParamNode | ClassNode | ComponentDefinitionNode;
 
 //#endregion
 
@@ -79,29 +87,46 @@ export class StyloParser {
 
   parse(): Node[] {
     const nodes: Node[] = [];
-
+    
     while (this.pos < this.tokens.length) {
       const token = this.peek();
-
       if (token.type !== TokenType.Keyword) {
         throw new Error(`Unexpected token at '${token.type}' at (${token.line}, ${token.index})`);
       }
-
-      if (token.value === KW_PARAM) {
-        nodes.push(this.parseParamDefinition());
-      } else if (token.value === KW_CLASS) {
-        nodes.push(this.parseClassDefinition());
-      } else if (token.value === KW_COMPONENT) {
-        nodes.push(this.parseComponentDefinition());
-      } else if (token.value === KW_RENDER) {
-        nodes.push(this.parseRender());
-      } else {
-        throw new Error(`Unexpected token '${token.type}' at (${token.line}, ${token.index})`);
-      }
+      nodes.push(this.getNextNode(token));
     }
 
     return nodes;
   }
+
+  private getNextNode(token: Token): Node {
+    if (token.value === KW_IMPORT) {
+      return this.parseImport();
+    } else if (token.value === KW_PARAM) {
+      return this.parseParamDefinition();
+    } else if (token.value === KW_CLASS) {
+      return this.parseClassDefinition();
+    } else if (token.value === KW_COMPONENT) {
+      return this.parseComponentDefinition();
+    } else if (token.value === KW_RENDER) {
+      return this.parseRender();
+    } else {
+      throw new Error(`Unexpected token '${token.type}' at (${token.line}, ${token.index})`);
+    }
+  }
+
+  //#region Import
+
+  private parseImport(): ImportNode {
+    this.expect(TokenType.Keyword, KW_IMPORT);
+    const path = this.parseTokenValue(TokenType.String);
+    return {
+      type: 'import',
+      path
+    };
+  }
+
+  //#endregion
 
   //#region Render
 

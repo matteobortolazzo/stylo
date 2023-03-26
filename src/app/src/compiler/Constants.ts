@@ -1,12 +1,13 @@
-const KW_RENDER = 'render';
-const KW_PARAM = 'param';
-const KW_CLASS = 'class';
-const KW_COMPONENT = 'component';
-const KW_STYLE = 'style';
-const KW_NAME = 'name';
-const KW_APPLY = '@apply';
-const KW_SLOT_LOW = 'slot';
-const KW_SLOT_HIGH = 'Slot';
-const TAB = '  ';
+export const KW_IMPORT = 'import';
+export const KW_RENDER = 'render';
+export const KW_PARAM = 'param';
+export const KW_CLASS = 'class';
+export const KW_COMPONENT = 'component';
 
-export { KW_RENDER, KW_PARAM, KW_CLASS, KW_COMPONENT, KW_STYLE, KW_NAME, KW_APPLY, TAB, KW_SLOT_LOW, KW_SLOT_HIGH }
+export const KW_STYLE = 'style';
+export const KW_NAME = 'name';
+export const KW_SLOT_LOW = 'slot';
+export const KW_SLOT_HIGH = 'Slot';
+
+export const KW_APPLY = '@apply';
+export const TAB = '  ';
