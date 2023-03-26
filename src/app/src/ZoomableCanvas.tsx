@@ -84,6 +84,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
         overflow: "hidden",
         width: "100%",
         height: "100%",
+        backgroundColor: '#333333'
       }}
       onWheel={handleZoom}
       onMouseDown={handlePanStart}

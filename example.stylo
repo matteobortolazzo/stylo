@@ -40,7 +40,7 @@ component Footer {
   }
 }
 
-render Page {
+render Page(backgroundColor, foregroundColor) {
   block(class="root") {
     Header("Stylo", class="header-test")
     Body {

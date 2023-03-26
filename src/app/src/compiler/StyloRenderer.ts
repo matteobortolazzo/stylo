@@ -151,6 +151,7 @@ export class StyloRenderer {
 
     const finalStyle = block.style ? replaceWithArgs(block.style)
       .split(';')
+      .filter(s => s.trim().length > 0)
       .map(style => {
         const values = style.split(':');
         if (values[1].trim().startsWith('$')) {

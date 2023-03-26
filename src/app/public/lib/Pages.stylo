@@ -5,8 +5,8 @@ class styloPage {
   border: 1px solid black;
 }
 
-component Page() {
-  block(class="styloPage") {
+component Page(background, foreground) {
+  block(class="styloPage", style="background: {background}; color: {foreground};") {
     Slot
   }
 }
