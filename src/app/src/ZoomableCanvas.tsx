@@ -1,4 +1,4 @@
-import React, { FC, useState, useRef } from "react";
+import React, { FC, useState, useRef, useEffect } from "react";
 import DOMPurify from "dompurify";
 import { RenderResult } from "./compiler/StyloRenderer";
 
@@ -45,7 +45,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
 
   function handlePanStart(event: React.MouseEvent<HTMLDivElement>) {
     const initialPosition = { x: event.clientX, y: event.clientY };
-  
+
     function handlePanMove(event: MouseEvent) {
       const dx = event.clientX - initialPosition.x;
       const dy = event.clientY - initialPosition.y;
@@ -53,18 +53,49 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
         x: prevCanvasPosition.x + dx,
         y: prevCanvasPosition.y + dy,
       }));
-  
+
       initialPosition.x = event.clientX;
       initialPosition.y = event.clientY;
     }
-  
+
     function handlePanEnd() {
       document.removeEventListener("mousemove", handlePanMove);
       document.removeEventListener("mouseup", handlePanEnd);
     }
-  
+
     document.addEventListener("mousemove", handlePanMove);
     document.addEventListener("mouseup", handlePanEnd);
+  }
+
+  useEffect(() => {
+    // get the container element
+    const container = canvasRef.current;
+    if (!container) {
+      return;
+    }
+  
+    // get the child elements
+    const childElements = container.querySelectorAll("div[data-stylo-component]");
+    console.log(childElements);
+  
+    // attach event listeners to the child elements
+    childElements.forEach((childElement) => {
+      childElement.addEventListener("mouseenter", handleMouseEnter as any);
+    });
+  
+    // cleanup function to remove the event listeners
+    return () => {
+      childElements.forEach((childElement) => {
+        childElement.removeEventListener("mouseenter", handleMouseEnter as any);
+      });
+    };
+  }, [canvasRef, render]);
+
+  function handleMouseEnter(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (target.dataset.styloComponent) {
+      console.log("enter", target.dataset.styloComponent);
+    }
   }
 
   const components = render.components.join("\n");
@@ -84,7 +115,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
         overflow: "hidden",
         width: "100%",
         height: "100%",
-        backgroundColor: '#333333'
+        backgroundColor: "#333333",
       }}
       onWheel={handleZoom}
       onMouseDown={handlePanStart}
