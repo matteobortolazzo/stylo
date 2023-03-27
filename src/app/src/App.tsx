@@ -42,9 +42,9 @@ const App = () => {
       setHighlight(componentInfo)
     }
   };
-
+  
   return (
-    <div style={layoutStyle}>
+    <div style={layoutStyle}>      
       <CodeEditor onChange={handleCodeChange} highlight={highlight} />
       <ZoomableCanvas render={render} mouseEnter={mouseEnter} />
     </div>

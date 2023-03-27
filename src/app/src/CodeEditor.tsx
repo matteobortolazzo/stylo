@@ -3,6 +3,7 @@ import MonacoEditor from "react-monaco-editor";
 import * as monaco from "monaco-editor";
 import { debounce } from "lodash";
 import { CodePosition } from "./compiler/StyloParser";
+import ChatInput from "./ChatInput";
 
 const registerCustomLanguage = () => {
   monaco.languages.register({ id: "stylo" });
@@ -142,11 +143,13 @@ type CodeEditorProps = {
 };
 
 const debounceMs = 300;
-const initialValue = `// Add code here`;
 
 const CodeEditor: FC<CodeEditorProps> = ({ onChange, highlight }) => {
   const [editorHeight, setEditorHeight] = useState(window.innerHeight);
   const [currentDecorations, setCurrentDecorations] = useState([]);
+  const [currentValue, setCurrentValue] = useState<string | undefined>(
+    `// Add code here`
+  );
   const editorRef = useRef(null);
 
   useEffect(() => {
@@ -199,16 +202,33 @@ const CodeEditor: FC<CodeEditorProps> = ({ onChange, highlight }) => {
     editorRef.current = editor;
   };
 
+  const handleCodeGenerated = async (input?: string) => {
+    setCurrentValue(input);
+  };
+
   return (
-    <MonacoEditor
-      width="100%"
-      height={`${editorHeight}px`}
-      language="stylo"
-      theme="vs-dark"
-      value={initialValue}
-      onChange={handleEditorChange}
-      editorDidMount={handleEditorDidMount}
-    />
+    <div>
+      {/* <div
+        style={{
+          zIndex: 2,
+          position: "absolute",
+          top: "10px",
+          left: "820px",
+          width: "765px",
+        }}
+      >
+        <ChatInput codeReady={handleCodeGenerated} />
+      </div> */}
+      <MonacoEditor
+        width="100%"
+        height={`${editorHeight}px`}
+        language="stylo"
+        theme="vs-dark"
+        value={currentValue}
+        onChange={handleEditorChange}
+        editorDidMount={handleEditorDidMount}
+      />
+    </div>
   );
 };
 

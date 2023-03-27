@@ -1,14 +1,6 @@
 import "lib/Pages"
 
-param backgroundColor = '#F5F5F5'
-param foregroundColor = "#333333"
 param primaryColor = '#FFC0CB'
-
-class root {
-  height: 100%;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-}
 
 component PrimaryButton(text) {
   button(class="w-24 px-4 border-2 rounded", style='border-color: $primaryColor; background: $primaryColor') { "{text}" }
@@ -18,18 +10,9 @@ component SecondaryButton(text) {
   button(class="w-24 px-4 border-2 rounded bg-white", style='border-color: $primaryColor') { "{text}" }
 }
 
-component Header(text) {
-  block(class="py-4 border-b-2 border-grey text-center") {
-    h1(class="text-xl") { "{text}" }
-  }
-}
-
 component Body {
   container(class="p-10")  {
     Slot
-    topRightContainer(class="absolute top-22 right-8 p-4 rounded border-4 border-grey") {
-      Slot(name="topRight")
-    }
   }
 }
 
@@ -40,9 +23,9 @@ component Footer {
   }
 }
 
-render Page(backgroundColor, foregroundColor) {
-  block(class="root") {
-    Header("Stylo", class="header-test")
+render Page('#F5F5F5', "#333333") {
+  block(class="h-full grid", style="grid-template-rows: auto 1fr auto") {
+    header(class="p-4 gap-2 border-2 text-2xl") { "Header" }
     Body {
       block { "This is the body" }
       topRight (slot="topRight") { "Top right" }
@@ -51,6 +34,3 @@ render Page(backgroundColor, foregroundColor) {
   }
 }
 
-render Footer
-
-render PrimaryButton("Hello")
