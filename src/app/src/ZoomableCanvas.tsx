@@ -4,6 +4,7 @@ import { RenderResult } from "./compiler/StyloRenderer";
 
 type ZoomableCanvasProps = {
   render: RenderResult;
+  mouseEnter: (component: string) => void;
 };
 
 const factor = 0.1;
@@ -12,7 +13,7 @@ const maxScale = 6;
 let zoomTarget = { x: 0, y: 0 };
 let zoomPoint = { x: 0, y: 0 };
 
-const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
+const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render, mouseEnter }) => {
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -67,7 +68,14 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
     document.addEventListener("mouseup", handlePanEnd);
   }
 
-  useEffect(() => {
+  useEffect(() => {    
+    function handleMouseEnter(event: MouseEvent) {
+      const target = event.target as HTMLElement;
+      if (target.dataset.styloComponent) {
+        mouseEnter(target.dataset.styloComponent);
+      }
+    }
+
     // get the container element
     const container = canvasRef.current;
     if (!container) {
@@ -76,7 +84,6 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
   
     // get the child elements
     const childElements = container.querySelectorAll("div[data-stylo-component]");
-    console.log(childElements);
   
     // attach event listeners to the child elements
     childElements.forEach((childElement) => {
@@ -89,14 +96,8 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render }) => {
         childElement.removeEventListener("mouseenter", handleMouseEnter as any);
       });
     };
-  }, [canvasRef, render]);
+  }, [canvasRef, render, mouseEnter]);
 
-  function handleMouseEnter(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (target.dataset.styloComponent) {
-      console.log("enter", target.dataset.styloComponent);
-    }
-  }
 
   const components = render.renders.join("\n");
   const container = `<div style="display: flex; gap: 100px; padding: 50px">

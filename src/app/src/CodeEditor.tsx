@@ -1,7 +1,8 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import MonacoEditor from "react-monaco-editor";
 import * as monaco from "monaco-editor";
 import { debounce } from "lodash";
+import { CodePosition } from "./compiler/StyloParser";
 
 const registerCustomLanguage = () => {
   monaco.languages.register({ id: "stylo" });
@@ -124,13 +125,16 @@ const registerCustomLanguage = () => {
 
 type CodeEditorProps = {
   onChange: (newValue: string) => void;
+  highlight?: CodePosition;
 };
 
 const debounceMs = 300;
 const initialValue = `// Add code here`;
 
-const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
+const CodeEditor: FC<CodeEditorProps> = ({ onChange, highlight }) => {
   const [editorHeight, setEditorHeight] = useState(window.innerHeight);
+  const [currentDecorations, setCurrentDecorations] = useState([]);
+  const editorRef = useRef(null);
 
   useEffect(() => {
     registerCustomLanguage();
@@ -146,9 +150,31 @@ const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (editorRef.current && highlight) {
+      const editor = editorRef.current as any;
+      const decorations = [];
+      for (let lineNumber = highlight.startLine; lineNumber <= highlight.endLine; lineNumber++) {
+        decorations.push({
+          range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+          options: {
+            isWholeLine: true,
+            className: 'myLineHighlight',
+          },
+        });
+      }
+      const newDecorations = editor.deltaDecorations(currentDecorations, decorations);
+      setCurrentDecorations(newDecorations);
+    }
+  }, [highlight, currentDecorations]);
+
   const handleEditorChange = debounce((newValue: string, _: any) => {
     onChange(newValue);
   }, debounceMs);
+
+  const handleEditorDidMount = (editor: any) => {
+    editorRef.current = editor;
+  };
 
   return (
     <MonacoEditor
@@ -158,6 +184,7 @@ const CodeEditor: FC<CodeEditorProps> = ({ onChange }) => {
       theme="vs-dark"
       value={initialValue}
       onChange={handleEditorChange}
+      editorDidMount={handleEditorDidMount}
     />
   );
 };

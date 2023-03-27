@@ -1,5 +1,5 @@
 import { TAB } from "./Constants";
-import { ImportNode, ParamNode, ClassNode, ComponentDefinitionNode, ComponentChildNode, RenderNode } from "./StyloParser";
+import { ImportNode, ParamNode, ClassNode, ComponentDefinitionNode, ComponentChildNode, RenderNode, CodePosition } from "./StyloParser";
 import { Node } from "./StyloParser";
 
 type ComponentArgument = {
@@ -10,7 +10,7 @@ type ComponentArgument = {
 export type RenderResult = {
   style: string;
   renders: string[];
-  components: Record<string, { index: number, line: number }>;
+  components: Record<string, CodePosition>;
 }
 
 export class StyloRenderer {
@@ -47,8 +47,8 @@ export class StyloRenderer {
     }
 
     this.ast = [];
-    const components: Record<string, { index: number, line: number }> = componentDefNodes.reduce((acc, curr) => {
-      (acc as any)[curr.name] = { index: curr.index, line: curr.index }
+    const components: Record<string, CodePosition> = componentDefNodes.reduce((acc, curr) => {
+      (acc as any)[curr.name] = curr.position
       return acc;
     }, {});
     return {

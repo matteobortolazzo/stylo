@@ -6,24 +6,18 @@ import { Token, TokenType } from './StyloLexer';
 // Import
 export type ImportNode = {
   type: 'import';
-  index: number;
-  line: number;
   path: string;
 };
 
 // Render
 export type RenderNode = {
   type: 'render';
-  index: number;
-  line: number;
   child: ComponentChildNode;
 };
 
 // Param
 export type ParamNode = {
   type: 'param';
-  index: number;
-  line: number;
   name: string;
   value: string;
 };
@@ -31,8 +25,6 @@ export type ParamNode = {
 // Classe
 export type ClassNode = {
   type: 'class';
-  index: number;
-  line: number;
   name: string;
   properties: ClassChildNode[];
 };
@@ -61,17 +53,19 @@ export type ApplyNode = {
 
 export type ComponentDefinitionNode = {
   type: 'componentDef';
-  index: number;
-  line: number;
+  position: CodePosition,
   name: string;
   args: string[];
   children: ComponentChildNode[];
 };
 
+export type CodePosition = {
+  startLine: number;
+  endLine: number;
+}
+
 export type ComponentChildNode = {
   type: 'block' | 'componentRef' | 'slotRef';
-  index: number;
-  line: number;
   name?: string;
   class?: string;
   style?: string;
@@ -133,13 +127,10 @@ export class StyloParser {
   //#region Import
 
   private parseImport(): ImportNode {
-    const token = this.peek();
     this.expect(TokenType.Keyword, KW_IMPORT);
     const path = this.parseTokenValue(TokenType.String);
     return {
       type: 'import',
-      index: token.index,
-      line: token.line,
       path
     };
   }
@@ -149,13 +140,10 @@ export class StyloParser {
   //#region Render
 
   private parseRender(): RenderNode {
-    const token = this.peek();
     this.expect(TokenType.Keyword, KW_RENDER);
     const child = this.parseComponentChild();
     return {
       type: 'render',
-      index: token.index,
-      line: token.line,
       child
     }
   }
@@ -165,7 +153,6 @@ export class StyloParser {
   //#region Param
 
   private parseParamDefinition(): ParamNode {
-    const token = this.peek();
     this.expect(TokenType.Keyword, 'param');
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Equal);
@@ -173,8 +160,6 @@ export class StyloParser {
 
     return {
       type: 'param',
-      index: token.index,
-      line: token.line,
       name,
       value,
     };
@@ -185,7 +170,6 @@ export class StyloParser {
   //#region Class
 
   private parseClassDefinition(): ClassNode {
-    const token = this.peek();
     this.expect(TokenType.Keyword, 'class');
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Lbrace);
@@ -199,8 +183,6 @@ export class StyloParser {
 
     return {
       type: 'class',
-      index: token.index,
-      line: token.line,
       name,
       properties,
     };
@@ -281,10 +263,14 @@ export class StyloParser {
 
     const children = this.parseComponentChildren();
 
+    const currentToken = this.peek();
+    const position: CodePosition = {
+      startLine: token.line,
+      endLine: currentToken ? currentToken.line - 1 : this.tokens[this.tokens.length - 1].line
+    }
     return {
       type: 'componentDef',
-      index: token.index,
-      line: token.line,
+      position,
       name,
       args,
       children
@@ -328,8 +314,6 @@ export class StyloParser {
     if (this.eof()) {
       return {
         type,
-        index: token.index,
-        line: token.line,
         name,
         args: [],
         children: []
@@ -364,8 +348,6 @@ export class StyloParser {
     if (this.eof()) {
       return {
         type,
-        index: token.index,
-        line: token.line,
         name,
         args,
         children: [],
@@ -428,8 +410,6 @@ export class StyloParser {
 
     return {
       type,
-      index: token.index,
-      line: token.line,
       name: type === 'slotRef' ? nameAttr : name,
       args,
       children,
