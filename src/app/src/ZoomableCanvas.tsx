@@ -16,6 +16,7 @@ let zoomPoint = { x: 0, y: 0 };
 const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render, mouseEnter }) => {
   const [scale, setScale] = useState(1);
   const [pos, setPos] = useState({ x: 0, y: 0 });
+  const [isMouseDown, setIsMouseDown] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   function handleZoom(e: React.WheelEvent<HTMLDivElement>) {
@@ -45,6 +46,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render, mouseEnter }) => {
   }
 
   function handlePanStart(event: React.MouseEvent<HTMLDivElement>) {
+    setIsMouseDown(true); 
     const initialPosition = { x: event.clientX, y: event.clientY };
 
     function handlePanMove(event: MouseEvent) {
@@ -60,6 +62,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render, mouseEnter }) => {
     }
 
     function handlePanEnd() {
+      setIsMouseDown(false); 
       document.removeEventListener("mousemove", handlePanMove);
       document.removeEventListener("mouseup", handlePanEnd);
     }
@@ -111,7 +114,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render, mouseEnter }) => {
       id="canvasContainer"
       style={{
         userSelect: "none",
-        cursor: "pointer",
+        cursor: isMouseDown ? "grab" : "default",
         position: "relative",
         overflow: "hidden",
         width: "100%",
