@@ -33,10 +33,12 @@ const App = () => {
     }
   };
 
-  const mouseEnter = (component: string) => {
+  const mouseEnter = (component?: string) => {
+    if (!component)
+      return setHighlight(undefined);
+
     const componentInfo = render.components[component];
     if (componentInfo) {
-      console.log(component, componentInfo);
       setHighlight(componentInfo)
     }
   };

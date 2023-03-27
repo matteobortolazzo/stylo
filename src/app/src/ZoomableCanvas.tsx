@@ -4,7 +4,7 @@ import { RenderResult } from "./compiler/StyloRenderer";
 
 type ZoomableCanvasProps = {
   render: RenderResult;
-  mouseEnter: (component: string) => void;
+  mouseEnter: (component?: string) => void;
 };
 
 const factor = 0.1;
@@ -111,7 +111,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render, mouseEnter }) => {
       id="canvasContainer"
       style={{
         userSelect: "none",
-        cursor: "grab",
+        cursor: "pointer",
         position: "relative",
         overflow: "hidden",
         width: "100%",
@@ -124,6 +124,7 @@ const ZoomableCanvas: FC<ZoomableCanvasProps> = ({ render, mouseEnter }) => {
       <div
         id="canvas"
         ref={canvasRef}
+        onMouseLeave={() => mouseEnter(undefined)}
         style={{
           transform: `translate(${pos.x}px, ${pos.y}px) translateZ(0) scale(${scale})`,
           transformOrigin: "0 0",

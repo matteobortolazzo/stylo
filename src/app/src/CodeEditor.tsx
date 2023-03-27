@@ -11,30 +11,31 @@ const registerCustomLanguage = () => {
     operators: ["=", ":"],
 
     // C# style strings
-    escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+    escapes:
+      /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
     // The main tokenizer for our languages
     tokenizer: {
       root: [
-        [/import/, { token: 'keyword' }],
-        [/param/, { token: 'keyword', next: '@paramname' }],
-        [/class/, { token: 'keyword', next: '@classname' }],
-        [/render/, { token: 'keyword', next: '@componentChildren' }],
-        [/component/, { token: 'keyword', next: '@componentname' }],
-        
+        [/import/, { token: "keyword" }],
+        [/param/, { token: "keyword", next: "@paramname" }],
+        [/class/, { token: "keyword", next: "@classname" }],
+        [/render/, { token: "keyword", next: "@componentChildren" }],
+        [/component/, { token: "keyword", next: "@componentname" }],
+
         // whitespace
         { include: "@whitespace" },
-        
+
         // delimiters and operators
-        [/[{}()\\[\\]]/, '@brackets'],
+        [/[{}()\\[\\]]/, "@brackets"],
 
         // delimiter: after number because of .\d floats
-        [/[;,.]/, 'delimiter'],
+        [/[;,.]/, "delimiter"],
 
         // strings
-        [/"([^"\\]|\\.)*$/, 'string.invalid' ],  // non-teminated string
-        [/"/,  { token: 'string.quote', bracket: '@open', next: '@string' } ],
-        [/'/,  { token: 'string.quote', bracket: '@open', next: '@string' } ]
+        [/"([^"\\]|\\.)*$/, "string.invalid"], // non-teminated string
+        [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
+        [/'/, { token: "string.quote", bracket: "@open", next: "@string" }],
       ],
 
       comment: [
@@ -58,67 +59,79 @@ const registerCustomLanguage = () => {
         [/\/\/.*$/, "comment"],
       ],
 
-      paramname: [
-        [/[a-z][\w$-]*/, { token: 'constant', next: '@popall' }],
-      ],
-      
+      paramname: [[/[a-z][\w$-]*/, { token: "constant", next: "@popall" }]],
+
       classname: [
-        [/[a-z][\w$-]*/, { token: 'variable.name', next: '@css_block', nextEmbedded: 'text/css' }],
+        [
+          /[a-z][\w$-]*/,
+          {
+            token: "variable.name",
+            next: "@css_block",
+            nextEmbedded: "text/css",
+          },
+        ],
       ],
 
       css_block: [
-        [/{/, 'delimiter.curly'],
-        [/}/, { token: '@rematch', next: '@popall', nextEmbedded: '@pop' }],
-        [/"/, 'string', '@string' ]
-      ],
-      
-      componentname: [
-        [/[A-Z][\w$]*/, { token: 'type', bracket: '@open' }],            
-        [/\(/, { token: 'delimiter.parenthesis', next: '@componentArgs' }],
-        [/{/, { token: 'delimiter.curly', next: '@componentChildren' }],
+        [/{/, "delimiter.curly"],
+        [/}/, { token: "@rematch", next: "@popall", nextEmbedded: "@pop" }],
+        [/"/, "string", "@string"],
       ],
 
-      componentArgs: [        
-        [/\(/, { token: 'delimiter.parenthesis', bracket: '@open' }],
-        [/[a-z][\w$]*/, 'attribute'],
-        [/\)/, { token: '@rematch', bracket: '@close', next: '@pop' }],
+      componentname: [
+        [/[A-Z][\w$]*/, { token: "type", bracket: "@open" }],
+        [/\(/, { token: "delimiter.parenthesis", next: "@componentArgs" }],
+        [/{/, { token: "delimiter.curly", next: "@componentChildren" }],
+      ],
+
+      componentArgs: [
+        [/\(/, { token: "delimiter.parenthesis", bracket: "@open" }],
+        [/[a-z][\w$]*/, "attribute"],
+        [/\)/, { token: "@rematch", bracket: "@close", next: "@pop" }],
       ],
 
       componentChildren: [
-        [/{/, { token: 'delimiter.curly', bracket: '@open' }],
-        [/Slot/, { token: 'type', next: '@element' }],
-        [/render/, { token: 'keyword' }],
-        [/[a-z][\w]+/, { token: 'tag', next: '@element' }],
-        [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
-        [/}/, { token: '@rematch', bracket: '@close', next: '@popall' }],
+        [/{/, { token: "delimiter.curly", bracket: "@open" }],
+        [/Slot/, { token: "type", next: "@element" }],
+        [/render/, { token: "keyword" }],
+        [/[a-z][\w]+/, { token: "tag", next: "@element" }],
+        [/[A-Z][\w]+/, { token: "type", next: "@element" }],
+        [/}/, { token: "@rematch", bracket: "@close", next: "@popall" }],
       ],
 
       element: [
-        [/\(/, { token: 'delimiter.parenthesis', bracket: '@open', next: '@elementParams' }],
-        [/{/, { token: 'delimiter.curly', next: '@content' }],
-        [/}/, { token: '@rematch', bracket: '@close', next: '@pop' }],
-        [/[a-zA-Z][\w]+/, { token: '@rematch', next: '@pop' }],
+        [
+          /\(/,
+          {
+            token: "delimiter.parenthesis",
+            bracket: "@open",
+            next: "@elementParams",
+          },
+        ],
+        [/{/, { token: "delimiter.curly", next: "@content" }],
+        [/}/, { token: "@rematch", bracket: "@close", next: "@pop" }],
+        [/[a-zA-Z][\w]+/, { token: "@rematch", next: "@pop" }],
       ],
 
-      elementParams: [     
-        [/\(/, { token: 'delimiter.parenthesis', bracket: '@open' }],
-        [/\bclass|style|slot|name\b/, 'variable.name'], 
-        [/"/, 'string', '@string' ],
-        [/'/, 'string', '@string' ],
-        [/,/, ''],
-        [/[a-z][\w$-]*/, 'attribute'],
-        [/\)/, { token: '@rematch', bracket: '@close', next: '@pop' }],
+      elementParams: [
+        [/\(/, { token: "delimiter.parenthesis", bracket: "@open" }],
+        [/\bclass|style|slot|name\b/, "variable.name"],
+        [/"/, "string", "@string"],
+        [/'/, "string", "@string"],
+        [/,/, ""],
+        [/[a-z][\w$-]*/, "attribute"],
+        [/\)/, { token: "@rematch", bracket: "@close", next: "@pop" }],
       ],
 
       content: [
-        [/{/, { token: 'delimiter.curly', bracket: '@open' }],
-        [/"/, 'string', '@string' ],
-        [/'/, 'string', '@string' ],
-        [/Slot/, { token: 'type', next: '@element' }],
-        [/[a-z][\w]+/, { token: 'tag', next: '@element' }],
-        [/[A-Z][\w]+/, { token: 'type', next: '@element' }],
-        [/}/, { token: 'delimiter.curly', bracket: '@close', next: '@pop' }],
-      ]
+        [/{/, { token: "delimiter.curly", bracket: "@open" }],
+        [/"/, "string", "@string"],
+        [/'/, "string", "@string"],
+        [/Slot/, { token: "type", next: "@element" }],
+        [/[a-z][\w]+/, { token: "tag", next: "@element" }],
+        [/[A-Z][\w]+/, { token: "type", next: "@element" }],
+        [/}/, { token: "delimiter.curly", bracket: "@close", next: "@pop" }],
+      ],
     },
   });
 };
@@ -143,30 +156,40 @@ const CodeEditor: FC<CodeEditorProps> = ({ onChange, highlight }) => {
       setEditorHeight(window.innerHeight);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   useEffect(() => {
+    if (!editorRef.current) return;
+
+    const editor = editorRef.current as any;
+    let newDecorations: any;
+    if (!highlight) {
+      newDecorations = editor.deltaDecorations(currentDecorations, []);
+    }
     if (editorRef.current && highlight) {
-      const editor = editorRef.current as any;
       const decorations = [];
-      for (let lineNumber = highlight.startLine; lineNumber <= highlight.endLine; lineNumber++) {
+      for (
+        let lineNumber = highlight.startLine;
+        lineNumber <= highlight.endLine;
+        lineNumber++
+      ) {
         decorations.push({
           range: new monaco.Range(lineNumber, 1, lineNumber, 1),
           options: {
             isWholeLine: true,
-            className: 'myLineHighlight',
+            className: "myLineHighlight",
           },
         });
       }
-      const newDecorations = editor.deltaDecorations(currentDecorations, decorations);
-      setCurrentDecorations(newDecorations);
+      newDecorations = editor.deltaDecorations(currentDecorations, decorations);
     }
-  }, [highlight, currentDecorations]);
+    setCurrentDecorations(newDecorations);
+  }, [highlight]);
 
   const handleEditorChange = debounce((newValue: string, _: any) => {
     onChange(newValue);
