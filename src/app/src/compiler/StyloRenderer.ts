@@ -72,19 +72,42 @@ export class StyloRenderer {
       .filter(node => node.name.endsWith("Color"))
       .map(node => ({
         name: node.name.substring(0, node.name.length - 5),
-        value: node.value
+        var: node.name,
       }));
     for (const color of colors) {
       colorClasses += `  
-.border-${color.name} {
-  border-color: ${color.value};
-}
-.color-${color.name} {
-  color: ${color.value};
-}
-.bg-${color.name} {
-  background-color: ${color.value};
-}`;
+  .border-${color.name} {
+    border-color: var(--${color.var});
+  }
+  .border-y-${color.name} {
+    border-top-color: var(--${color.var});
+    border-bottom-color: var(--${color.var});
+  }
+  .border-x-${color.name} {
+    border-right-color: var(--${color.var});
+    border-left-color: var(--${color.var});
+  }
+  .border-t-${color.name} {
+    border-top-color: var(--${color.var});
+  }
+  .border-r-${color.name} {
+    border-right-color: var(--${color.var});
+  }
+  .border-b-${color.name} {
+    border-bottom-color: var(--${color.var});
+  }
+  .border-k-${color.name} {
+    border-left-color: var(--${color.var});
+  }
+  .color-${color.name} {
+    color: var(--${color.var});
+  }
+  .bg-${color.name} {
+    background-color: var(--${color.var});
+  }
+  .outline-${color.name} {
+    outline-color: var(--${color.var});
+  }`;
     }
     return colorClasses;
   }
