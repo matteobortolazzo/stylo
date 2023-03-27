@@ -60,10 +60,33 @@ export class StyloRenderer {
 
   private renderStyleBlock(paramNodes: ParamNode[], classNodes: ClassNode[]): string {
     const cssVariables = paramNodes.map(n => this.renderParameters(n)).join("\n");
-    const customClasses = classNodes.map(n => this.renderCustomClass(n)).join("\n");
+    const customClasses = classNodes.map(n => this.renderCustomClass(n)).join("\n") + this.getColorClasses(paramNodes);
 
     const styleContent = cssVariables ? `:root {\n${cssVariables}\n${TAB}${TAB}}` : "";
     return `<style>\n${TAB}${TAB}${styleContent}\n${TAB}${customClasses}\n${TAB}</style>`;
+  }
+
+  private getColorClasses(paramNodes: ParamNode[]): string {
+    let colorClasses = ''
+    const colors = paramNodes
+      .filter(node => node.name.endsWith("Color"))
+      .map(node => ({
+        name: node.name.substring(0, node.name.length - 5),
+        value: node.value
+      }));
+    for (const color of colors) {
+      colorClasses += `  
+.border-${color.name} {
+  border-color: ${color.value};
+}
+.color-${color.name} {
+  color: ${color.value};
+}
+.bg-${color.name} {
+  background-color: ${color.value};
+}`;
+    }
+    return colorClasses;
   }
 
   private renderParameters(node: ParamNode): string {
