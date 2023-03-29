@@ -99,7 +99,7 @@ export class StyloRenderer {
   .border-k-${color.name} {
     border-left-color: var(--${color.var});
   }
-  .color-${color.name} {
+  .text-${color.name} {
     color: var(--${color.var});
   }
   .bg-${color.name} {

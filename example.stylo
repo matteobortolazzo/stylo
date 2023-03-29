@@ -3,11 +3,11 @@ import "lib/Pages"
 param primaryColor = '#FFC0CB'
 
 component PrimaryButton(text) {
-  button(class="w-24 px-4 border-2 rounded bg-primary border-primary") { "{text}" }
+  button(class="px-4 border-2 rounded bg-primary border-primary") { "{text}" }
 }
 
 component SecondaryButton(text) {
-  button(class="w-24 px-4 border-2 rounded bg-white border-primary") { "{text}" }
+  button(class="px-4 border-2 rounded bg-white border-primary") { "{text}" }
 }
 
 component Body {
@@ -16,21 +16,19 @@ component Body {
   }
 }
 
-component Footer {
-  block(class="p-4 flex justify-end gap-2 border-2") { 
-    SecondaryButton("Cancel")
-    PrimaryButton("Continue")
+component Footer(primaryText, secondaryText) {
+  block(class="p-4 flex justify-end gap-2 border-t-2") { 
+    SecondaryButton(secondaryText)
+    PrimaryButton(primaryText)
   }
 }
 
 render Page('#F5F5F5', "#333333") {
   block(class="h-full grid", style="grid-template-rows: auto 1fr auto") {
-    header(class="p-4 gap-2 border-2 text-2xl") { "Header" }
+    header(class="p-4 gap-2 border-b-2 text-2xl") { "Header" }
     Body {
       block { "This is the body" }
-      topRight (slot="topRight") { "Top right" }
     }
-    Footer
+    Footer("Continue", "Cancel")
   }
 }
-
