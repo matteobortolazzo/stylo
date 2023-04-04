@@ -267,17 +267,26 @@ export class StyloRenderer {
     }
 
     // Wrong args
-    if (componentDef.args.length !== componentRef.args!.length) {
-      throw new Error(`Component ${componentRef.name} requires ${componentDef.args?.length} arguments, but ${componentRef.args?.length ?? 0} were provided`)
+    const notOptionalArgCount = componentDef.args.filter(a => !a.defaultValue).length;
+    if (notOptionalArgCount > componentRef.args!.length) {
+      throw new Error(`Component ${componentRef.name} requires ${notOptionalArgCount} arguments, but ${componentRef.args?.length ?? 0} were provided`)
     }
 
     for (let i = 0; i < componentDef.args!.length; i++) {
-      const name = componentDef.args![i];
+      const argDefNode = componentDef.args![i];
+      const isOptional = argDefNode.defaultValue !== undefined;
+
+      // Default value
+      if (isOptional && componentRef.args!.length <= i) {
+        currentNodeArgs.push({ name: argDefNode.name, value: argDefNode.defaultValue! });
+        continue;
+      }
+
       const argNode = componentRef.args![i];
 
       // Direct value
       if (argNode.valueType === 'string') {
-        currentNodeArgs.push({ name, value: argNode.value })
+        currentNodeArgs.push({ name: argDefNode.name, value: argNode.value });
         continue;
       }
 
@@ -285,11 +294,11 @@ export class StyloRenderer {
       const parantArg = parentArgs?.find((a) => a.name === argNode.value);
       const globaParam = this.parameters?.get(argNode.value);
       if (parantArg) {
-        currentNodeArgs.push({ name, value: parantArg.value })
+        currentNodeArgs.push({ name: argDefNode.name, value: parantArg.value });
       } else if (globaParam) {
-        currentNodeArgs.push({ name, value: globaParam })
+        currentNodeArgs.push({ name: argDefNode.name, value: globaParam });
       } else {
-        throw new Error(`Argument ${argNode.value} is not defined`)
+        throw new Error(`Argument ${argNode.value} is not defined`);
       }
     }
     return currentNodeArgs;

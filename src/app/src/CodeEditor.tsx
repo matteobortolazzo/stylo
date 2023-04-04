@@ -3,7 +3,6 @@ import MonacoEditor from "react-monaco-editor";
 import * as monaco from "monaco-editor";
 import { debounce } from "lodash";
 import { CodePosition } from "./compiler/StyloParser";
-import ChatInput from "./ChatInput";
 
 const registerCustomLanguage = () => {
   monaco.languages.register({ id: "stylo" });
@@ -88,6 +87,8 @@ const registerCustomLanguage = () => {
       componentArgs: [
         [/\(/, { token: "delimiter.parenthesis", bracket: "@open" }],
         [/[a-z][\w$]*/, "attribute"],
+        [/"/, "string", "@string"],
+        [/'/, "string", "@string"],
         [/\)/, { token: "@rematch", bracket: "@close", next: "@pop" }],
       ],
 

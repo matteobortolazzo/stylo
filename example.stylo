@@ -6,7 +6,7 @@ component PrimaryButton(text) {
   button(class="px-4 border-2 rounded bg-primary border-primary") { "{text}" }
 }
 
-component SecondaryButton(text) {
+component SecondaryButton(text = "Cancel") {
   button(class="px-4 border-2 rounded bg-white border-primary") { "{text}" }
 }
 
@@ -16,7 +16,7 @@ component Body {
   }
 }
 
-component Footer(primaryText, secondaryText) {
+component Footer(primaryText, secondaryText = "Cancel") {
   block(class="p-4 flex justify-end gap-2 border-t-2") { 
     SecondaryButton(secondaryText)
     PrimaryButton(primaryText)
@@ -29,6 +29,6 @@ render Page('#F5F5F5', "#333333") {
     Body {
       block { "This is the body" }
     }
-    Footer("Continue", "Cancel")
+    Footer("Continue")
   }
 }

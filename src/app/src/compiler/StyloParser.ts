@@ -55,9 +55,15 @@ export type ComponentDefinitionNode = {
   type: 'componentDef';
   position: CodePosition,
   name: string;
-  args: string[];
+  args: ComponentDefinitionArgNode[];
   children: ComponentChildNode[];
 };
+
+export type ComponentDefinitionArgNode = {
+  type: 'componentDefArg';
+  name: string;
+  defaultValue?: string;
+}
 
 export type CodePosition = {
   startLine: number;
@@ -256,7 +262,7 @@ export class StyloParser {
     this.expect(TokenType.Keyword, 'component');
     const name = this.parseTokenValue(TokenType.Identifier);
 
-    let args: string[] | undefined = [];
+    let args: ComponentDefinitionArgNode[] | undefined = [];
     if (this.peekHasType(TokenType.Lparen)) {
       args = this.parseComponentArguments();
     }
@@ -277,11 +283,31 @@ export class StyloParser {
     }
   }
 
-  private parseComponentArguments(): string[] {
+  private parseComponentArguments(): ComponentDefinitionArgNode[] {
     this.expect(TokenType.Lparen);
-    const items: string[] = [];
+    const items: ComponentDefinitionArgNode[] = [];
+    let defaultValueFound = false;
     while (!this.peekHasType(TokenType.Rparen)) {
-      items.push(this.parseTokenValue(TokenType.Identifier));
+      const token = this.peek();
+      const name = this.parseTokenValue(TokenType.Identifier);
+      let defaultValue: string | undefined = undefined;
+
+      if (this.peekHasType(TokenType.Equal)) {
+        this.expect(TokenType.Equal);
+        defaultValue = this.parseTokenValue(TokenType.String);
+        defaultValueFound = true;
+      } else {
+        if (defaultValueFound) {
+          throw new Error(`Cannot have a non-default argument after a default argument at (${token.line}, ${token.index})`);
+        }
+      }
+
+      const argNode: ComponentDefinitionArgNode = {
+        type: 'componentDefArg',
+        name,
+        defaultValue
+      };
+      items.push(argNode);
       if (this.peekHasType(TokenType.Comma)) {
         this.expect(TokenType.Comma);
       }
