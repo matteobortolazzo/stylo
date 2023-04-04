@@ -390,9 +390,6 @@ export class StyloParser {
       }
     }
     else if (type === 'block') {
-      if (!children.length) {
-        throw new Error(`Block must have children at (${token.line}, ${token.index})`);
-      }
       if (args.length > 0) {
         throw new Error(`Block cannot have arguments at (${token.line}, ${token.index})`);
       }
