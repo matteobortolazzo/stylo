@@ -40,9 +40,8 @@ export class StyloLexer {
   private static readonly WHITESPACE = /\s/;
   private static readonly NEWLINE = /\r?\n/;
   private static readonly WORD_START = /[@a-zA-Z]/;
-  private static readonly NUMBER_START = /[0-9]/;
+  private static readonly CSSVALUE_START = /[0-9a-zA-Z]/;
   private static readonly WORD = /[-a-zA-Z0-9@_]/;
-  private static readonly CSS_VALUE = /[-a-zA-Z0-9@_%]/;
 
   tokenize(input: string): Token[] {
     this.pos = 0;
@@ -75,46 +74,44 @@ export class StyloLexer {
         continue;
       }
 
-      if (StyloLexer.NUMBER_START.test(currentChar)) {
-        this.tokenizeWord(StyloLexer.CSS_VALUE, TokenType.CssValue, false);
+      if (StyloLexer.CSSVALUE_START.test(currentChar)) {
+        this.tokenizeCssValue();
         continue;
       }
 
       switch (currentChar) {
         case '(':
-          this.addToken(TokenType.Lparen);
+          this.addToken(TokenType.Lparen, '(');
           break;
         case ')':
-          this.addToken(TokenType.Rparen);
+          this.addToken(TokenType.Rparen, ')');
           break;
         case '{':
-          this.addToken(TokenType.Lbrace);
+          this.addToken(TokenType.Lbrace, '{');
           break;
         case '}':
-          this.addToken(TokenType.Rbrace);
+          this.addToken(TokenType.Rbrace, '}');
           break;
         case ':':
-          this.addToken(TokenType.Colon);
+          this.addToken(TokenType.Colon, ':');
           break;
         case ';':
-          this.addToken(TokenType.Semicolon);
+          this.addToken(TokenType.Semicolon, ';');
           break;
         case ',':
-          this.addToken(TokenType.Comma);
+          this.addToken(TokenType.Comma, ',');
           break;
         case '$':          
           this.pos++;
           this.tokenizeWord(StyloLexer.WORD, TokenType.CssVariable, false);
           break;
         case '=':
-          this.addToken(TokenType.Equal);
+          this.addToken(TokenType.Equal, '=');
           break;
         case '"':
         case "'":
           this.tokenizeString(currentChar);
           break;
-        default:
-          throw new Error(`Unexpected character: ${currentChar}`);
       }
 
       this.pos++;
@@ -160,7 +157,22 @@ export class StyloLexer {
       ? TokenType.Keyword
       : type;
     this.tokens.push(new Token(tokenType, word, startPosition.line, startPosition.index));
-  }  
+  } 
+
+  private tokenizeCssValue(): void {
+    let word = '';
+    const startIndex = this.pos;
+    const startPosition = this.calculateStartLine(startIndex);
+    while (
+      this.pos < this.input.length &&
+      this.input[this.pos] !== ';' && this.input[this.pos] !== '}') {
+      word += this.input[this.pos++];
+    }
+
+    if (word.length > 0) {
+      this.tokens.push(new Token(TokenType.CssValue, word, startPosition.line, startPosition.index));
+    }
+  }
   
   private tokenizeString(quote: string): void {
     let str = '';
@@ -182,10 +194,10 @@ export class StyloLexer {
     this.tokens.push(new Token(TokenType.String, str, startPosition.line, startPosition.index));
   }
   
-  private addToken(type: TokenType): void {
+  private addToken(type: TokenType, value: string): void {
     const startIndex = this.pos;
     const startPosition = this.calculateStartLine(startIndex);
-    this.tokens.push(new Token(type, null, startPosition.line, startPosition.index));
+    this.tokens.push(new Token(type, value, startPosition.line, startPosition.index));
   }
   
   private calculateStartLine(index: number): {line: number, index: number} {

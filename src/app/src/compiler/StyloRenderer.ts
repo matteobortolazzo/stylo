@@ -122,7 +122,7 @@ export class StyloRenderer {
 
     for (const property of node.properties) {
       if (property.type === "cssProperty") {
-        const value = property.value.join(' ');
+        const value = property.value;
         cssProperties.push(`${property.name}: ${value};`);
       } else if (property.type === "cssVariableNode") {
         cssProperties.push(`${property.name}: var(--${property.value});`);

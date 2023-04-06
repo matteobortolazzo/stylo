@@ -2,6 +2,10 @@ import "lib/Pages"
 
 param primaryColor = '#FFC0CB'
 
+class bg-gradient {
+  background: linear-gradient(45deg, #FFC0CB, #FF69B4);
+}
+
 component PrimaryButton(text) {
   button(class="px-4 border-2 rounded bg-primary border-primary") { "{text}" }
 }
@@ -25,7 +29,7 @@ component Footer(primaryText, secondaryText = "Cancel") {
 
 render Page('#F5F5F5', "#333333") {
   block(class="h-full grid", style="grid-template-rows: auto 1fr auto") {
-    header(class="p-4 gap-2 border-b-2 text-2xl") { "Header" }
+    header(class="p-4 gap-2 border-b-2 text-2xl bg-gradient") { "Header" }
     Body {
       block { "This is the body" }
     }

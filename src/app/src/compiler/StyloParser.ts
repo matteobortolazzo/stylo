@@ -34,7 +34,7 @@ export type ClassChildNode = CssPropertyNode | CssVariableNode | ApplyNode;
 export type CssPropertyNode = {
   type: 'cssProperty';
   name: string;
-  value: string[];
+  value: string;
 };
 
 export type CssVariableNode = {
@@ -185,6 +185,7 @@ export class StyloParser {
       properties.push(this.parseClassChild());
     }
 
+    console.log(properties);
     this.expect(TokenType.Rbrace);
 
     return {
@@ -205,29 +206,12 @@ export class StyloParser {
     const name = this.parseTokenValue(TokenType.Identifier);
     this.expect(TokenType.Colon);
 
-    if (this.peekHasType(TokenType.CssVariable)) {
-      return this.parseCssVariable(name)
+    let value = '';
+    while(!this.peekHasType(TokenType.Semicolon)){
+      value += this.peek().value;
+      this.pos++;
     }
-    return this.parseCssPropertyValue(name);
-  }
 
-  private parseCssVariable(name: string): CssVariableNode {
-    const value = this.parseTokenValue(TokenType.CssVariable);
-    return {
-      type: 'cssVariableNode',
-      name,
-      value,
-    };
-  }
-
-  private parseCssPropertyValue(name: string): CssPropertyNode {
-    const value: string[] = [];
-    while (!this.peekHasType(TokenType.Semicolon)) {
-      const nextTokenType = this.peekHasType(TokenType.CssValue)
-        ? TokenType.CssValue
-        : TokenType.Identifier;
-      value.push(this.parseTokenValue(nextTokenType));
-    }
     this.expect(TokenType.Semicolon);
 
     return {
