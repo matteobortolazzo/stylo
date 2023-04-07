@@ -4,5 +4,11 @@
   "private": true,
   "workspaces": [
     "app"
-  ]
+  ],
+  "devDependencies": {
+    "concurrently": "^8.0.1"
+  },
+  "scripts": {
+    "start": "concurrently \"yarn workspace app start\""
+  }
 }
