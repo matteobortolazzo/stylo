@@ -1,7 +1,11 @@
+// Import Page component
 import "lib/Pages"
 
+// Params
 param primaryColor = '#FFC0CB'
+param backgroundColor = '#F5F5F5'
 
+// Custom classes
 class bg-gradient {
   background: linear-gradient(45deg, #FFC0CB, #FF69B4);
 }
@@ -10,28 +14,32 @@ component PrimaryButton(text) {
   button(class="px-4 border-2 rounded bg-primary border-primary") { "{text}" }
 }
 
-component SecondaryButton(text = "Cancel") {
+component SecondaryButton(text) {
   button(class="px-4 border-2 rounded bg-white border-primary") { "{text}" }
 }
 
 component Body {
-  container(class="p-10")  {
+  container(class="p-10 gap-4")  {    
+    Slot(name="top")
+    br
     Slot
   }
 }
 
-component Footer(primaryText, secondaryText = "Cancel") {
+component Footer(primaryText = "Ok", secondaryText = "Cancel") {
   block(class="p-4 flex justify-end gap-2 border-t-2") { 
     SecondaryButton(secondaryText)
     PrimaryButton(primaryText)
   }
 }
 
-render Page('#F5F5F5', "#333333") {
+// Display
+render Page(backgroundColor, "#333333") {
   block(class="h-full grid", style="grid-template-rows: auto 1fr auto") {
     header(class="p-4 gap-2 border-b-2 text-2xl bg-gradient") { "Header" }
     Body {
       block { "This is the body" }
+      block (slot="top") { "This should be on the top" }
     }
     Footer("Continue")
   }
