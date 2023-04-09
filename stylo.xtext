@@ -1,0 +1,63 @@
+grammar org.xtext.stylodesign.stylo.Stylo with org.eclipse.xtext.common.Terminals
+
+generate stylo "http://www.example.org/Stylo"
+
+Model:
+    elements+=Element*;
+
+Element:
+    Import | Parameter | ClassDeclaration | ComponentDeclaration | Render;
+
+Import:
+    'import' importURI=STRING;
+
+Parameter:
+    'param' name=ID '=' value=STRING;
+
+ClassDeclaration:
+    'class' name=ID '{' properties+=Property* '}';
+
+Property:
+    name=ID ':' value=STRING ';';
+
+ComponentDeclaration:
+    'component' name=ID ('(' (parameters+=ComponentParameter (',' parameters+=ComponentParameter)*)? ')')? '{' content=Content '}';
+
+ComponentParameter:
+    name=ID ('=' defaultValue=STRING)?;
+
+Content:
+    (items+=ContentItem)*;
+
+ContentItem:
+    ComponentReference | HTMLElement | Text | Slot;
+
+ComponentReference:
+    component=[ComponentDeclaration] ('(' (arguments+=ComponentArgument (',' arguments+=ComponentArgument)*)? ')')?;
+
+ComponentArgument:
+    value=STRING;
+
+HTMLElement:
+    name=ID_LOWER ('(' (attributes+=Attribute*)')')? '{' content=Content '}';
+
+Attribute:
+    name=ID ('=' value=STRING)?;
+
+Text:
+    value=STRING;
+
+Slot:
+    'Slot' ('(' 'name' '=' name=STRING ')')?;
+
+Render:
+    'render' name=ID '(' parameters+=RenderParameter (',' parameters+=RenderParameter)* ')' '{' content=Content '}';
+
+RenderParameter:
+    value=STRING;
+
+terminal ID_UPPER:
+    ('A'..'Z');
+
+terminal ID_LOWER:
+    ('a'..'z');
