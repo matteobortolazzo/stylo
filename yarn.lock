@@ -3789,9 +3789,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"app@workspace:app":
+"app@workspace:src/app":
   version: 0.0.0-use.local
-  resolution: "app@workspace:app"
+  resolution: "app@workspace:src/app"
   dependencies:
     "@testing-library/jest-dom": ^5.16.5
     "@testing-library/react": ^13.4.0
@@ -8963,9 +8963,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lsp@workspace:lsp":
+"lsp@workspace:src/lsp":
   version: 0.0.0-use.local
-  resolution: "lsp@workspace:lsp"
+  resolution: "lsp@workspace:src/lsp"
   dependencies:
     vscode-languageclient: ^8.1.0
     vscode-languageserver: ^8.1.0
