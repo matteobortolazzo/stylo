@@ -10,6 +10,6 @@
   },
   "scripts": {
     "start": "concurrently \"yarn workspace app start\"",
-    "lsp": "yarn workspace lsp watch"
+    "watch": "yarn workspace lsp watch"
   }
 }

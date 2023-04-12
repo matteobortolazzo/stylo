@@ -3,7 +3,7 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [
+  "configurations": [    
     {
       "name": "Launch App",
       "request": "launch",
@@ -24,11 +24,11 @@
 			"request": "launch",
 			"name": "Launch Client",
 			"runtimeExecutable": "${execPath}",
-			"args": ["--extensionDevelopmentPath=${workspaceRoot}/src/lsp"],
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}"],
 			"outFiles": ["${workspaceRoot}/src/lsp/client/out/**/*.js"],
 			"preLaunchTask": {
 				"type": "npm",
-				"script": "lsp"
+				"script": "watch"
 			}
 		}
   ]
