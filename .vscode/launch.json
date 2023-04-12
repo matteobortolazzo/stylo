@@ -18,6 +18,18 @@
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}/src/lsp"
       ]
-    }
+    },
+    {
+			"type": "extensionHost",
+			"request": "launch",
+			"name": "Launch Client",
+			"runtimeExecutable": "${execPath}",
+			"args": ["--extensionDevelopmentPath=${workspaceRoot}/src/lsp"],
+			"outFiles": ["${workspaceRoot}/src/lsp/client/out/**/*.js"],
+			"preLaunchTask": {
+				"type": "npm",
+				"script": "lsp"
+			}
+		}
   ]
 }
