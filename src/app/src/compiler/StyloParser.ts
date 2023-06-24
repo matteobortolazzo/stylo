@@ -185,7 +185,6 @@ export class StyloParser {
       properties.push(this.parseClassChild());
     }
 
-    console.log(properties);
     this.expect(TokenType.Rbrace);
 
     return {
