@@ -11,6 +11,6 @@
   "scripts": {
     "start": "concurrently \"yarn workspace app start\"",
     "build": "concurrently \"yarn workspace app build\"",
-    "deploy": "yarn workspace app deploy"
+    "deploy": "yarn workspace app predeploy && yarn workspace app deploy"
   }
 }
