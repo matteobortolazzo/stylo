@@ -4,7 +4,9 @@ A new Design-as-code language side project.
 
 [ChatGPT](https://openai.com/blog/chatgpt) help with the name, syntax and boilerplate code.
 
-Give it a try at [https://matteobortolazzo.github.io/stylo/](https://matteobortolazzo.github.io/stylo/)!
+Give it a try at [https://matteobortolazzo.github.io/stylo/](https://matteobortolazzo.github.io/stylo/)! 
+
+You can use [example.stylo](./example.stylo) to test.
 
 ![Stylo example](./imgs/example.png)
 
@@ -23,8 +25,6 @@ A language server should be the next thing.
 The solution uses `yarn workspaces` as the idea was to share code easily.
 
 Run `yarn && yarn start` to install packages, compile and open the browser.
-
-Copy the content of the [example.stylo](./example.stylo) file.
 
 ## The editor
 
