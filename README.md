@@ -4,6 +4,8 @@ A new Design-as-code language side project.
 
 [ChatGPT](https://openai.com/blog/chatgpt) help with the name, syntax and boilerplate code.
 
+Give it a try at [https://matteobortolazzo.github.io/stylo/](https://matteobortolazzo.github.io/stylo/)!
+
 ![Stylo example](./imgs/example.png)
 
 ## The code
