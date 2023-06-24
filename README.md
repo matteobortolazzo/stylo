@@ -201,16 +201,31 @@ There's also a `Pages` library within the code. But there's only one component s
 import "lib/Pages"
 ```
 
+## What's missing
+
+Nice features to have would be:
+* A language server
+* CSS import
+* Multi-file editor
+* A proper SaaS
+  * Accounts
+  * Projects
+  * Git integration
+  * Export to JS frameworks
+  * Publish static websites
+  * Actual links and buttons
+
 ## Conclusions
 
-I publish the code just for historic purposes.
+I am publishing the code mostly for historical purposes.
 
-While I like the language itself, and I learned A LOT, I don't see a demand for it.
+While I like the language and learned A LOT, I don't see a demand for it.
 
-For designers, it's easier to keep doing what they do. Figma supports design tokens and reusable components already. They also recently released a plugin for *VS Code*, but I don't think it will be a success.
+For designers, it's easier to keep doing what they do. For developers, it might work. But *Figma* supports design tokens and reusable components already. They also recently released a plugin for *VS Code*, but I wonder if it will take off.
 
 It's true that from the *Abstract Syntax Tree*, we can export *Angular*, *React*, *Vue* or anything we like.
-However, this is good only for greenfield projects. Once the project grows, it's incrementally harder to keep the design and the code is sync.
+However, this is good only for greenfield projects. Once the project grows, keeping the design in sync with the code is increasingly more challenging.
 Ironically, the same problem I had writing this with the help of *ChatGPT*!
 
-If *Figma* succeeds with the dev plugin, I might regret not keep going with this project, but it has been great fun.
+If *Figma* succeeds with the dev plugin or this gets some traction, I might give it a second look.
+For now, I'll move on. Compilers are not a great conversation topic with my friends and family. Or strangers in general.
